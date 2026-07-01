@@ -1,0 +1,6 @@
+# 中间产物（重新运行 generate_video.py 可生成）
+output/raw_silent.webm
+output/narration.mp3
+output/narration_adjusted.mp3
+output/merged_temp.mp4
+output/audio_segments/
