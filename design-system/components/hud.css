@@ -1,0 +1,111 @@
+/* Map HUD · 地图透明叠层组件 */
+
+.ag-hud {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: var(--ag-radius-lg);
+  isolation: isolate;
+}
+
+.ag-hud__map {
+  position: absolute;
+  inset: 0;
+  background: #8899aa center/cover;
+}
+
+.ag-hud__ambient {
+  position: absolute;
+  top: var(--ag-space-3);
+  left: var(--ag-space-3);
+  right: var(--ag-space-3);
+  z-index: 3;
+  border-radius: var(--ag-radius-pill);
+}
+
+.ag-hud__card {
+  position: absolute;
+  left: var(--ag-space-3);
+  right: var(--ag-space-3);
+  bottom: var(--ag-space-3);
+  z-index: 2;
+  border-radius: var(--ag-radius-xl);
+  padding: var(--ag-space-4) var(--ag-space-5);
+}
+
+.ag-hud__eyebrow {
+  margin: 0 0 4px;
+  font-size: var(--ag-text-label-sm);
+  font-weight: 600;
+  color: var(--ag-secondary-deep);
+}
+
+.ag-hud__title {
+  margin: 0;
+  font-family: var(--ag-font-display);
+  font-size: var(--ag-text-title);
+  font-weight: 600;
+  color: var(--ag-on-surface);
+  text-shadow: 0 1px 12px rgba(255, 255, 255, 0.5);
+}
+
+.ag-hud__row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--ag-space-3);
+  margin-top: var(--ag-space-3);
+}
+
+.ag-hud__distance {
+  font-family: var(--ag-font-display);
+  font-size: var(--ag-text-display);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--ag-primary);
+  text-shadow: 0 1px 16px rgba(255, 255, 255, 0.4);
+}
+
+.ag-hud__distance small {
+  font-size: 0.42em;
+  font-weight: 600;
+  color: var(--ag-on-surface-variant);
+}
+
+.ag-hud__meta {
+  font-size: var(--ag-text-label);
+  color: var(--ag-on-surface-variant);
+}
+
+.ag-hud__action {
+  position: absolute;
+  right: var(--ag-space-3);
+  bottom: 112px;
+  z-index: 4;
+  border-radius: var(--ag-radius-pill);
+}
+
+/* 地图暗底 HUD（卫星图场景备用） */
+.ag-hud-dark {
+  background: rgba(8, 18, 36, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--ag-radius-md);
+  padding: var(--ag-space-3) var(--ag-space-4);
+  color: #fff;
+  /* 无 backdrop-filter — 避免 halation */
+}
+
+.ag-hud-dark__value {
+  font-family: var(--ag-font-display);
+  font-size: var(--ag-text-display);
+  font-weight: 500;
+  color: var(--ag-secondary);
+}
+
+.ag-hud-dark__label {
+  font-size: var(--ag-text-label-sm);
+  color: rgba(255, 255, 255, 0.62);
+  letter-spacing: 0.06em;
+}

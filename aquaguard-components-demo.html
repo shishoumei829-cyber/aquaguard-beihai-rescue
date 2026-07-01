@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AquaGuard · M3 Expressive 组件展示</title>
+<link rel="stylesheet" href="aquaguard-lumina.css">
+<link rel="stylesheet" href="aquaguard-m3-components.css">
+<link rel="stylesheet" href="aquaguard-hud.css">
+<style>
+  body {
+    margin: 0;
+    background: var(--page-bg);
+    color: var(--on-surface);
+  }
+
+  .demo-header {
+    background: var(--primary);
+    color: var(--on-primary);
+    padding: 32px 40px 40px;
+  }
+
+  .demo-header h1 {
+    margin: 0 0 8px;
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+
+  .demo-header p {
+    margin: 0;
+    font-size: 15px;
+    opacity: 0.82;
+    max-width: 640px;
+    line-height: 1.5;
+  }
+
+  .demo-nav {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+  }
+
+  .demo-nav a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    transition: background 120ms;
+  }
+
+  .demo-nav a:hover { background: rgba(255, 255, 255, 0.22); }
+
+  .demo-main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px 24px 80px;
+  }
+
+  .demo-section {
+    margin-bottom: 48px;
+  }
+
+  .demo-section__title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 6px;
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--primary);
+  }
+
+  .demo-section__desc {
+    margin: 0 0 20px;
+    font-size: 14px;
+    color: var(--on-surface-variant);
+    line-height: 1.5;
+  }
+
+  .demo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+  }
+
+  .demo-panel {
+    background: var(--bg);
+    border: 1px solid var(--outline-variant);
+    border-radius: var(--shape-corner-lg, 20px);
+    padding: 20px;
+    box-shadow: var(--card-shadow);
+  }
+
+  .demo-panel__label {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--tx3);
+    margin-bottom: 14px;
+  }
+
+  .demo-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .demo-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+  }
+
+  /* 地图 HUD 演示区 */
+  .demo-map-stage {
+    position: relative;
+    height: 380px;
+    border-radius: var(--shape-corner-lg, 20px);
+    overflow: hidden;
+    border: 1px solid var(--outline-variant);
+    background:
+      url('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/15/13888/26624') center/cover no-repeat;
+  }
+
+  .demo-map-stage::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.35) 100%);
+    pointer-events: none;
+  }
+
+  .demo-map-stage .ag-hud-panel {
+    position: absolute;
+    bottom: 16px;
+    left: 16px;
+    z-index: 2;
+  }
+
+  .demo-map-stage .ag-hud-alert {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    right: 16px;
+    z-index: 2;
+  }
+
+  .demo-map-stage .ag-hud-toolbar {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 2;
+  }
+
+  .demo-map-stage .ag-hud-marker {
+    position: absolute;
+    top: 55%;
+    left: 42%;
+    z-index: 2;
+  }
+
+  .demo-map-stage .ag-hud-marker--danger {
+    top: 38%;
+    left: 58%;
+  }
+
+  /* 手机预览 */
+  .demo-phone-wrap {
+    display: flex;
+    justify-content: center;
+    padding: 24px 0;
+  }
+
+  .demo-phone-inner {
+    width: 100%;
+    max-width: 360px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    background:
+      radial-gradient(circle at 12% 8%, rgba(247, 159, 71, 0.18), transparent 31%),
+      linear-gradient(180deg, #fff 0%, #f4f6fa 100%);
+    border-radius: 24px;
+    border: 1px solid var(--outline-variant);
+  }
+
+  .demo-phone-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--primary);
+  }
+
+  .demo-code {
+    margin-top: 12px;
+    padding: 12px 14px;
+    background: #0f1729;
+    border-radius: 10px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: #94a3b8;
+    overflow-x: auto;
+    line-height: 1.6;
+  }
+
+  .demo-code .tag { color: #7dd3fc; }
+  .demo-code .cls { color: #fcd34d; }
+</style>
+</head>
+<body>
+
+<header class="demo-header">
+  <h1>AquaGuard · M3 Expressive 组件库</h1>
+  <p>基于 Google Material 3 Expressive 研究与 Glimmer HUD 规则，为北海银滩救援系统设计的可复用组件。点击下方快速跳转。</p>
+  <nav class="demo-nav">
+    <a href="#buttons"><span class="material-symbols-outlined sm">smart_button</span>按钮</a>
+    <a href="#chips"><span class="material-symbols-outlined sm">label</span>状态徽章</a>
+    <a href="#cards"><span class="material-symbols-outlined sm">dashboard</span>救援卡片</a>
+    <a href="#metrics"><span class="material-symbols-outlined sm">pin</span>指标数字</a>
+    <a href="#hud"><span class="material-symbols-outlined sm">map</span>地图 HUD</a>
+    <a href="#field"><span class="material-symbols-outlined sm">phone_iphone</span>现场端场景</a>
+  </nav>
+</header>
+
+<main class="demo-main">
+
+  <!-- ═══ BUTTONS ═══ -->
+  <section class="demo-section" id="buttons">
+    <h2 class="demo-section__title">
+      <span class="material-symbols-outlined">smart_button</span>
+      按钮 · Expressive Buttons
+    </h2>
+    <p class="demo-section__desc">Google 研究：更大按钮让用户找到关键操作的速度提升最高 4 倍。紧急按钮 56px 高，适配湿手户外场景。</p>
+
+    <div class="demo-grid">
+      <div class="demo-panel">
+        <div class="demo-panel__label">ag-btn--emergency</div>
+        <div class="demo-stack">
+          <button class="ag-btn ag-btn--emergency" type="button">
+            <span class="material-symbols-outlined">directions_run</span>
+            出发救援
+          </button>
+          <div class="demo-code"><span class="tag">&lt;button</span> <span class="cls">class="ag-btn ag-btn--emergency"</span><span class="tag">&gt;</span></div>
+        </div>
+      </div>
+
+      <div class="demo-panel">
+        <div class="demo-panel__label">ag-btn--primary / outline / icon</div>
+        <div class="demo-stack">
+          <button class="ag-btn ag-btn--primary" type="button">
+            <span class="material-symbols-outlined">send</span>
+            确认派遣
+          </button>
+          <button class="ag-btn ag-btn--outline" type="button">查看详情</button>
+          <div class="demo-row">
+            <button class="ag-btn ag-btn--icon" type="button" aria-label="定位">
+              <span class="material-symbols-outlined">my_location</span>
+            </button>
+            <button class="ag-btn ag-btn--icon" type="button" aria-label="通话">
+              <span class="material-symbols-outlined">call</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="demo-panel">
+        <div class="demo-panel__label">ag-split-btn · M3 新组件</div>
+        <div class="ag-split-btn">
+          <button class="ag-split-btn__main" type="button">
+            <span class="material-symbols-outlined">group</span>
+            派遣小组 A
+          </button>
+          <button class="ag-split-btn__menu" type="button" aria-label="更多派遣选项">
+            <span class="material-symbols-outlined">expand_more</span>
+          </button>
+        </div>
+        <p style="margin:12px 0 0;font-size:13px;color:var(--tx3);">主操作 + 关联菜单，减少二次点击</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ CHIPS ═══ -->
+  <section class="demo-section" id="chips">
+    <h2 class="demo-section__title">
+      <span class="material-symbols-outlined">label</span>
+      状态徽章 · Status Chips
+    </h2>
+    <p class="demo-section__desc">containment 分组原则：颜色 + 图标双编码，色盲用户也能识别状态。</p>
+
+    <div class="demo-panel">
+      <div class="demo-row">
+        <span class="ag-chip ag-chip--emergency">
+          <span class="material-symbols-outlined">emergency</span>
+          紧急求救
+        </span>
+        <span class="ag-chip ag-chip--waiting">
+          <span class="material-symbols-outlined">hourglass_top</span>
+          待处理
+        </span>
+        <span class="ag-chip ag-chip--active">
+          <span class="material-symbols-outlined">directions_run</span>
+          救援中
+        </span>
+        <span class="ag-chip ag-chip--danger">
+          <span class="material-symbols-outlined">warning</span>
+          心率异常
+        </span>
+        <span class="ag-chip ag-chip--live">
+          <span class="material-symbols-outlined">sensors</span>
+          LIVE
+        </span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ CARDS ═══ -->
+  <section class="demo-section" id="cards">
+    <h2 class="demo-section__title">
+      <span class="material-symbols-outlined">dashboard</span>
+      救援卡片 · Contained Cards
+    </h2>
+    <p class="demo-section__desc">左侧 containment 色条标识紧急程度，卡片内直接放置 Expressive 操作按钮。</p>
+
+    <div class="demo-grid">
+      <article class="ag-card ag-card--emergency">
+        <div class="ag-card__header">
+          <h3 class="ag-card__title">手环 SOS · A-2213</h3>
+          <span class="ag-chip ag-chip--emergency">
+            <span class="material-symbols-outlined">emergency</span>
+            紧急
+          </span>
+        </div>
+        <div class="ag-card__meta">
+          <span class="ag-card__meta-item">
+            <span class="material-symbols-outlined">person</span>
+            儿童 · 7 岁
+          </span>
+          <span class="ag-card__meta-item">
+            <span class="material-symbols-outlined">location_on</span>
+            B-3 泳区 · 128m
+          </span>
+          <span class="ag-card__meta-item">
+            <span class="material-symbols-outlined">monitor_heart</span>
+            142 bpm
+          </span>
+        </div>
+        <div class="ag-card__actions">
+          <button class="ag-btn ag-btn--primary" type="button">
+            <span class="material-symbols-outlined">send</span>
+            派遣
+          </button>
+          <button class="ag-btn ag-btn--outline" type="button">详情</button>
+        </div>
+      </article>
+
+      <article class="ag-card ag-card--active">
+        <div class="ag-card__header">
+          <h3 class="ag-card__title">巡逻员 · 李师傅</h3>
+          <span class="ag-chip ag-chip--active">
+            <span class="material-symbols-outlined">directions_run</span>
+            途中
+          </span>
+        </div>
+        <div class="ag-card__meta">
+          <span class="ag-card__meta-item">
+            <span class="material-symbols-outlined">timer</span>
+            预计 2 分钟到达
+          </span>
+          <span class="ag-card__meta-item">
+            <span class="material-symbols-outlined">route</span>
+            沿步道 120m
+          </span>
+        </div>
+        <div class="ag-progress" style="margin-top:12px;">
+          <div class="ag-progress__label">
+            <span>救援进度</span>
+            <span>68%</span>
+          </div>
+          <div class="ag-progress__track">
+            <div class="ag-progress__fill ag-progress__fill--emergency" style="width:68%"></div>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ═══ METRICS ═══ -->
+  <section class="demo-section" id="metrics">
+    <h2 class="demo-section__title">
+      <span class="material-symbols-outlined">pin</span>
+      指标数字 · Metric Display
+    </h2>
+    <p class="demo-section__desc">Expressive 大号数字用于指挥端关键指标，让用户一眼看到待处理数量。</p>
+
+    <div class="demo-panel">
+      <div class="ag-metric-row">
+        <div class="ag-metric">
+          <span class="ag-metric__value ag-metric__value--emergency">3</span>
+          <span class="ag-metric__label">待派遣</span>
+        </div>
+        <div class="ag-metric">
+          <span class="ag-metric__value">12</span>
+          <span class="ag-metric__label">在岗救生员</span>
+        </div>
+        <div class="ag-metric">
+          <span class="ag-metric__value ag-metric__value--danger">1</span>
+          <span class="ag-metric__label">心率告警</span>
+        </div>
+        <div class="ag-metric ag-metric--compact">
+          <span class="ag-metric__value">4.2<span style="font-size:0.5em;font-weight:600;">min</span></span>
+          <span class="ag-metric__label">平均响应</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-panel" style="margin-top:16px;">
+      <div class="demo-panel__label">ag-fab-toolbar · 地图快捷操作</div>
+      <div class="ag-fab-toolbar">
+        <button class="ag-fab-toolbar__btn ag-fab-toolbar__btn--active" type="button" aria-label="事件视图">
+          <span class="material-symbols-outlined">crisis_alert</span>
+        </button>
+        <button class="ag-fab-toolbar__btn" type="button" aria-label="人员分布">
+          <span class="material-symbols-outlined">groups</span>
+        </button>
+        <button class="ag-fab-toolbar__btn" type="button" aria-label="区域划分">
+          <span class="material-symbols-outlined">grid_view</span>
+        </button>
+        <span class="ag-fab-toolbar__divider"></span>
+        <button class="ag-fab-toolbar__btn" type="button" aria-label="图层">
+          <span class="material-symbols-outlined">layers</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ HUD ═══ -->
+  <section class="demo-section" id="hud">
+    <h2 class="demo-section__title">
+      <span class="material-symbols-outlined">map</span>
+      地图 HUD · Glimmer 暗底亮字
+    </h2>
+    <p class="demo-section__desc">借鉴透明屏幕设计规则：暗底 + 亮色内容，不用毛玻璃 blur，在卫星图动态背景上保持可读。</p>
+
+    <div class="demo-map-stage">
+      <div class="ag-hud-alert ag-hud">
+        <span class="material-symbols-outlined">emergency</span>
+        新 SOS 事件 · B-3 泳区 · 儿童手环 A-2213
+      </div>
+
+      <div class="ag-hud-marker">
+        <span class="ag-hud-marker__icon">
+          <span class="material-symbols-outlined">person</span>
+        </span>
+        巡逻员
+      </div>
+
+      <div class="ag-hud-marker ag-hud-marker--danger">
+        <span class="ag-hud-marker__icon">
+          <span class="material-symbols-outlined">emergency</span>
+        </span>
+        SOS · 128m
+      </div>
+
+      <div class="ag-hud ag-hud-panel ag-hud--elevated">
+        <div class="ag-hud-panel__header">
+          <span class="ag-hud-panel__title">实时态势</span>
+          <span class="ag-hud-panel__live">Live</span>
+        </div>
+        <div class="ag-hud-metric-row">
+          <div class="ag-hud-metric">
+            <span class="ag-hud-metric__value ag-hud-metric__value--accent">3</span>
+            <span class="ag-hud-metric__label">待派遣</span>
+          </div>
+          <div class="ag-hud-metric">
+            <span class="ag-hud-metric__value">847</span>
+            <span class="ag-hud-metric__label">在滩人数</span>
+          </div>
+          <div class="ag-hud-metric">
+            <span class="ag-hud-metric__value ag-hud-metric__value--danger">1</span>
+            <span class="ag-hud-metric__label">告警</span>
+          </div>
+        </div>
+        <div class="ag-hud-bars">
+          <div class="ag-hud-bars__bar" style="height:30%"></div>
+          <div class="ag-hud-bars__bar" style="height:45%"></div>
+          <div class="ag-hud-bars__bar ag-hud-bars__bar--accent" style="height:72%"></div>
+          <div class="ag-hud-bars__bar ag-hud-bars__bar--danger" style="height:88%"></div>
+          <div class="ag-hud-bars__bar" style="height:55%"></div>
+          <div class="ag-hud-bars__bar" style="height:40%"></div>
+        </div>
+      </div>
+
+      <div class="ag-hud-toolbar">
+        <button class="ag-hud-toolbar__btn ag-hud-toolbar__btn--active" type="button" aria-label="SOS">
+          <span class="material-symbols-outlined">crisis_alert</span>
+        </button>
+        <button class="ag-hud-toolbar__btn" type="button" aria-label="人员">
+          <span class="material-symbols-outlined">groups</span>
+        </button>
+        <button class="ag-hud-toolbar__btn" type="button" aria-label="测距">
+          <span class="material-symbols-outlined">straighten</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ FIELD PHONE ═══ -->
+  <section class="demo-section" id="field">
+    <h2 class="demo-section__title">
+      <span class="material-symbols-outlined">phone_iphone</span>
+      现场端场景 · Field Phone Composition
+    </h2>
+    <p class="demo-section__desc">组合多个组件模拟救生员手机端完整界面——导航提示 + SOS 横幅 + 救援卡片 + 底部紧急按钮。</p>
+
+    <div class="demo-phone-wrap">
+      <div class="demo-phone-inner">
+        <div class="demo-phone-top">
+          <span>14:37</span>
+          <span>AquaGuard Field</span>
+          <span>5G ▮▮▮</span>
+        </div>
+
+        <div class="ag-sos-banner">
+          <span class="material-symbols-outlined">emergency_home</span>
+          连续 5 次触碰敲击 · 系统已确认紧急状态
+        </div>
+
+        <div class="ag-nav-step ag-nav-step--warning">
+          <span class="material-symbols-outlined">directions_walk</span>
+          沿救援步道前进 120m 后右转
+        </div>
+
+        <article class="ag-card ag-card--emergency" style="box-shadow:none;">
+          <div class="ag-card__header">
+            <h3 class="ag-card__title">手环 A-2213</h3>
+            <span class="ag-chip ag-chip--danger">
+              <span class="material-symbols-outlined">monitor_heart</span>
+              142 bpm
+            </span>
+          </div>
+          <div class="ag-card__meta">
+            <span class="ag-card__meta-item">
+              <span class="material-symbols-outlined">person</span>
+              儿童 · 7 岁
+            </span>
+            <span class="ag-card__meta-item">
+              <span class="material-symbols-outlined">location_on</span>
+              B-3 · 128m
+            </span>
+          </div>
+        </article>
+
+        <button class="ag-btn ag-btn--emergency" type="button">
+          <span class="material-symbols-outlined">directions_run</span>
+          出发救援
+        </button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+</body>
+</html>

@@ -1,0 +1,235 @@
+@import url('https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght@6..144,400..700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=swap');
+
+/* AquaGuard 地图透明叠层 HUD
+   载体：网页地图叠层 | 参考：aquaguard-glass + 空间纵深
+   借鉴 Glimmer：极简、2s ambient 缓入、按钮叠放 */
+
+:root {
+  --spatial-ease: cubic-bezier(0.2, 0, 0, 1);
+  --spatial-ambient: 2000ms;
+  --spatial-r-lg: 24px;
+  --spatial-r-pill: 999px;
+}
+
+/* ── 视口：地图 + 叠层 ── */
+.spatial-hud {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  aspect-ratio: 4 / 3;
+  margin: 0 auto;
+  overflow: hidden;
+  border-radius: 20px;
+  isolation: isolate;
+  font-family: 'Google Sans Flex', 'PingFang SC', system-ui, sans-serif;
+  font-optical-sizing: auto;
+  -webkit-font-smoothing: antialiased;
+}
+
+.spatial-hud__map {
+  position: absolute;
+  inset: 0;
+  background: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=900&q=80') center/cover;
+  transform: scale(1.04);
+}
+
+/* ── 磨砂材质基类 ──
+   低白度 + 强模糊 + 饱和，让环境色渗入 */
+.spatial-glass {
+  position: relative;
+  overflow: hidden;
+  border: none;
+  background: rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(48px) saturate(1.75) brightness(1.06);
+  -webkit-backdrop-filter: blur(48px) saturate(1.75) brightness(1.06);
+}
+
+/* 边缘光：上沿亮、下沿暗，不用 1px 描边 */
+.spatial-glass::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow:
+    inset 0  1px  0 rgba(255, 255, 255, 0.55),
+    inset 0 -1px  0 rgba(0, 0, 0, 0.06);
+  z-index: 2;
+}
+
+/* 折射高光 */
+.spatial-glass::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    linear-gradient(125deg, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0.12) 22%, transparent 50%),
+    radial-gradient(ellipse 80% 60% at 12% 0%, rgba(255, 255, 255, 0.28), transparent 55%);
+  mix-blend-mode: screen;
+  opacity: 0.85;
+  z-index: 1;
+}
+
+.spatial-glass > * {
+  position: relative;
+  z-index: 3;
+}
+
+/* ── 纵深三档 ── */
+.spatial-glass--far {
+  background: rgba(255, 255, 255, 0.10);
+  backdrop-filter: blur(56px) saturate(1.9) brightness(1.04);
+  -webkit-backdrop-filter: blur(56px) saturate(1.9) brightness(1.04);
+  box-shadow:
+    0  4px 16px rgba(0, 0, 0, 0.07),
+    0  1px  4px rgba(0, 0, 0, 0.05);
+  transform: translateY(2px) scale(0.985);
+}
+
+.spatial-glass--mid {
+  background: rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(44px) saturate(1.8) brightness(1.05);
+  -webkit-backdrop-filter: blur(44px) saturate(1.8) brightness(1.05);
+  box-shadow:
+    0 12px 36px rgba(24, 46, 125, 0.11),
+    0  4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.spatial-glass--near {
+  background: rgba(255, 255, 255, 0.26);
+  backdrop-filter: blur(36px) saturate(1.65) brightness(1.07);
+  -webkit-backdrop-filter: blur(36px) saturate(1.65) brightness(1.07);
+  box-shadow:
+    0 20px 48px rgba(24, 46, 125, 0.16),
+    0  8px 20px rgba(0, 0, 0, 0.10),
+    0  2px  6px rgba(0, 0, 0, 0.06);
+  transform: translateY(-6px) scale(1.02);
+}
+
+/* ── Ambient 通知 · 远层 · 2s 缓入 ── */
+.spatial-hud__ambient {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  right: 14px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-radius: var(--spatial-r-pill);
+  font-size: 14px;
+  font-weight: 500;
+  color: #182e7d;
+  font-variation-settings: 'opsz' 14, 'wght' 500;
+  animation: spatial-ambient-in var(--spatial-ambient) var(--spatial-ease) both;
+}
+
+.spatial-hud__ambient .material-symbols-outlined {
+  font-size: 20px;
+  color: #ba1a1a;
+  font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+}
+
+@keyframes spatial-ambient-in {
+  from { opacity: 0; transform: translateY(-16px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(2px) scale(0.985); }
+}
+
+/* ── 救援卡 · 中层 ── */
+.spatial-hud__card {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 14px;
+  z-index: 3;
+  border-radius: var(--spatial-r-lg);
+  padding: 18px 20px 16px;
+}
+
+.spatial-hud__eyebrow {
+  margin: 0 0 5px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: #e8872a;
+  font-variation-settings: 'opsz' 12, 'wght' 600;
+}
+
+.spatial-hud__title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.25;
+  color: #12141a;
+  font-variation-settings: 'opsz' 18, 'wght' 600;
+  text-shadow: 0 1px 12px rgba(255, 255, 255, 0.6);
+}
+
+.spatial-hud__row {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin-top: 12px;
+}
+
+.spatial-hud__distance {
+  font-size: 34px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: #182e7d;
+  font-variation-settings: 'opsz' 34, 'wght' 500;
+  text-shadow: 0 1px 16px rgba(255, 255, 255, 0.5);
+}
+
+.spatial-hud__distance small {
+  font-size: 0.4em;
+  font-weight: 600;
+  color: #454651;
+}
+
+.spatial-hud__meta {
+  font-size: 13px;
+  color: #3d4250;
+  font-variation-settings: 'opsz' 14, 'wght' 400;
+}
+
+/* ── 操作钮 · 近层 · 叠在卡片上 ── */
+.spatial-hud__action {
+  position: absolute;
+  right: 22px;
+  bottom: 118px;
+  z-index: 4;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 46px;
+  padding: 0 20px;
+  border: none;
+  border-radius: var(--spatial-r-pill);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: #182e7d;
+  font-variation-settings: 'opsz' 14, 'wght' 600;
+  cursor: pointer;
+}
+
+.spatial-hud__action .material-symbols-outlined {
+  font-size: 20px;
+  font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+}
+
+.spatial-hud__action:focus-visible {
+  outline: 2px solid rgba(24, 46, 125, 0.45);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spatial-hud__ambient { animation: none; }
+}

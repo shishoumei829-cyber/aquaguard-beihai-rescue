@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Google 组件 v2</title>
+<link rel="stylesheet" href="aquaguard-google-v2.css">
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  body {
+    font-family: 'Google Sans Flex', system-ui, sans-serif;
+    background: #f0f2f5;
+    padding: 40px;
+    display: flex;
+    gap: 48px;
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+  .frame {
+    background: #fff;
+    border-radius: 24px;
+    padding: 32px;
+    width: 400px;
+    box-shadow: 0 1px 2px rgba(0,0,0,.06), 0 2px 6px rgba(0,0,0,.04);
+  }
+  .frame h2 {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: #5f6368;
+    margin-bottom: 24px;
+  }
+  .map {
+    position: relative;
+    height: 280px;
+    border-radius: 16px;
+    overflow: hidden;
+    background: url('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/15/13888/26624') center/cover;
+  }
+  .map .glimmer-hud {
+    position: absolute;
+    left: 16px;
+    bottom: 16px;
+  }
+</style>
+</head>
+<body>
+
+<div class="frame">
+  <h2>M3 Expressive · Filled Button</h2>
+  <button class="m3-btn-expressive" type="button">
+    <span class="m3-btn-expressive__icon material-symbols-outlined">directions_run</span>
+    <span class="m3-btn-expressive__label">出发救援</span>
+  </button>
+</div>
+
+<div class="frame">
+  <h2>Glimmer · HUD Surface</h2>
+  <div class="map">
+    <div class="glimmer-hud">
+      <span class="glimmer-hud__label">待派遣</span>
+      <span class="glimmer-hud__value glimmer-hud__value--accent">3</span>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
