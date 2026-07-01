@@ -1,0 +1,272 @@
+/* AquaGuard · Glimmer HUD Layer
+   借鉴 Jetpack Compose Glimmer：暗底亮字，叠在动态背景（地图/卫星图）上 */
+
+:root {
+  --hud-bg: rgba(8, 18, 36, 0.92);
+  --hud-bg-elevated: rgba(12, 24, 48, 0.96);
+  --hud-border: rgba(255, 255, 255, 0.12);
+  --hud-text: #ffffff;
+  --hud-text-muted: rgba(255, 255, 255, 0.62);
+  --hud-accent: var(--secondary);
+  --hud-danger: #ff6b6b;
+  --hud-safe: #4ade80;
+  --hud-radius: 14px;
+  --hud-radius-lg: 18px;
+}
+
+/* ══════════════════════════════════════
+   HUD SURFACE — 基础暗底容器
+   ══════════════════════════════════════ */
+
+.ag-hud {
+  background: var(--hud-bg);
+  border: 1px solid var(--hud-border);
+  border-radius: var(--hud-radius);
+  color: var(--hud-text);
+  /* 不用 backdrop-filter blur — 避免卫星图 + 亮底光晕 */
+}
+
+.ag-hud--elevated {
+  background: var(--hud-bg-elevated);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+}
+
+/* ══════════════════════════════════════
+   HUD PANEL — 地图角落实时数据
+   ══════════════════════════════════════ */
+
+.ag-hud-panel {
+  min-width: 200px;
+  padding: 14px 16px;
+}
+
+.ag-hud-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.ag-hud-panel__title {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--hud-text-muted);
+}
+
+.ag-hud-panel__live {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--hud-safe);
+}
+
+.ag-hud-panel__live::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--hud-safe);
+  box-shadow: 0 0 8px var(--hud-safe);
+  animation: hud-live-blink 2s ease-in-out infinite;
+}
+
+@keyframes hud-live-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* ══════════════════════════════════════
+   HUD METRIC — 亮色大号数字
+   ══════════════════════════════════════ */
+
+.ag-hud-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ag-hud-metric__value {
+  font-size: 36px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  color: var(--hud-text);
+}
+
+.ag-hud-metric__value--accent { color: var(--hud-accent); }
+.ag-hud-metric__value--danger { color: var(--hud-danger); }
+
+.ag-hud-metric__label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--hud-text-muted);
+}
+
+.ag-hud-metric-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.ag-hud-metric-row .ag-hud-metric__value {
+  font-size: 22px;
+}
+
+/* ══════════════════════════════════════
+   HUD STAT BAR — 迷你条形图
+   ══════════════════════════════════════ */
+
+.ag-hud-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 48px;
+  margin-top: 10px;
+}
+
+.ag-hud-bars__bar {
+  flex: 1;
+  border-radius: 3px 3px 0 0;
+  background: rgba(255, 255, 255, 0.15);
+  transition: height var(--motion-duration-medium) var(--motion-ease-emphasized);
+}
+
+.ag-hud-bars__bar--accent { background: var(--hud-accent); }
+.ag-hud-bars__bar--danger { background: var(--hud-danger); }
+
+/* ══════════════════════════════════════
+   HUD MARKER — 地图标记徽章
+   ══════════════════════════════════════ */
+
+.ag-hud-marker {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px 6px 8px;
+  background: var(--hud-bg-elevated);
+  border: 2px solid var(--hud-accent);
+  border-radius: var(--hud-radius-full, 999px);
+  color: var(--hud-text);
+  font-size: 12px;
+  font-weight: 700;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  white-space: nowrap;
+}
+
+.ag-hud-marker--danger {
+  border-color: var(--hud-danger);
+  animation: hud-marker-pulse 2s ease-in-out infinite;
+}
+
+.ag-hud-marker__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--hud-accent);
+  color: #1a1208;
+}
+
+.ag-hud-marker--danger .ag-hud-marker__icon {
+  background: var(--hud-danger);
+  color: #fff;
+}
+
+.ag-hud-marker__icon .material-symbols-outlined {
+  font-size: 16px;
+  font-variation-settings: 'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 20;
+}
+
+@keyframes hud-marker-pulse {
+  0%, 100% { box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5), 0 0 0 0 rgba(255, 107, 107, 0.5); }
+  50% { box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5), 0 0 0 10px rgba(255, 107, 107, 0); }
+}
+
+/* ══════════════════════════════════════
+   HUD ALERT STRIP — 地图顶部告警条
+   ══════════════════════════════════════ */
+
+.ag-hud-alert {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: linear-gradient(90deg, rgba(186, 26, 26, 0.9) 0%, rgba(212, 43, 43, 0.85) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--hud-radius);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  animation: ag-sos-enter 1.5s cubic-bezier(0.2, 0, 0, 1) both;
+}
+
+.ag-hud-alert .material-symbols-outlined {
+  font-size: 20px;
+  font-variation-settings: 'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 24;
+}
+
+/* ══════════════════════════════════════
+   HUD FLOATING ACTIONS — 地图浮层工具条
+   ══════════════════════════════════════ */
+
+.ag-hud-toolbar {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px;
+  background: var(--hud-bg-elevated);
+  border: 1px solid var(--hud-border);
+  border-radius: var(--hud-radius-lg);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.ag-hud-toolbar__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--hud-text-muted);
+  cursor: pointer;
+  transition:
+    background 120ms,
+    color 120ms;
+}
+
+.ag-hud-toolbar__btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--hud-text);
+}
+
+.ag-hud-toolbar__btn--active {
+  background: var(--hud-accent);
+  color: #1a1208;
+}
+
+.ag-hud-toolbar__btn .material-symbols-outlined { font-size: 22px; }
+
+/* ══════════════════════════════════════
+   REDUCED MOTION
+   ══════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .ag-hud-panel__live::before,
+  .ag-hud-marker--danger,
+  .ag-hud-alert {
+    animation: none;
+  }
+}
