@@ -1,0 +1,2393 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="command-center">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AquaGuard · 北海银滩智能救援指挥系统</title>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="aquaguard-lumina.css">
+<link rel="stylesheet" href="aquaguard-stitch.css">
+<link rel="stylesheet" href="aquaguard-glass.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;background:var(--page-bg);font-family:var(--font-sans);-webkit-font-smoothing:antialiased;}
+body{display:flex;align-items:center;justify-content:center;padding:16px;}
+.app{width:100%;max-width:1440px;display:flex;flex-direction:column;background:var(--surface,#FBF8FF);border:1px solid var(--outline-variant,#E2E4ED);border-radius:var(--radius-xl,1.5rem);overflow:hidden;height:min(820px,96vh);box-shadow:var(--card-shadow,0 10px 25px -5px rgba(24,46,125,0.05));}
+
+/* TOPBAR */
+.top{height:56px;background:var(--nv);display:flex;align-items:center;padding:0 16px;gap:10px;flex-shrink:0;box-shadow:0 4px 20px rgba(24,46,125,0.15);}
+.logo{width:36px;height:36px;background:rgba(255,255,255,0.18);border-radius:1rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.12);}
+.brand{font-size:var(--text-xl);font-weight:700;color:#fff;white-space:nowrap;letter-spacing:-0.02em;}
+.brand-sub{font-size:var(--text-xs);color:rgba(255,255,255,0.55);letter-spacing:0.12em;text-transform:uppercase;margin-left:2px;}
+.tsep{width:1px;height:14px;background:rgba(255,255,255,0.15);flex-shrink:0;}
+.tloc{font-size:var(--text-sm);color:rgba(255,255,255,0.45);white-space:nowrap;}
+.tenv{display:flex;align-items:center;gap:10px;flex:1;justify-content:center;flex-wrap:nowrap;overflow:hidden;}
+.tenv-i{display:flex;align-items:center;gap:3px;font-size:var(--text-xs);color:rgba(255,255,255,0.55);white-space:nowrap;}
+.tenv-i b{color:#fff;font-weight:600;font-size:var(--text-sm);}
+.tenv-i i,.tenv-i .material-symbols-outlined{font-size:var(--text-base);color:var(--og);}
+.tstats{display:flex;gap:10px;align-items:center;flex-shrink:0;}
+.tst{display:flex;align-items:baseline;gap:3px;white-space:nowrap;}
+.tsn{font-size:var(--text-md);font-weight:600;color:#fff;}
+.tsl{font-size:var(--text-2xs);color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.3px;}
+.tright{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.ldot{width:5px;height:5px;border-radius:50%;background:var(--og);}
+.ltxt{font-size:var(--text-sm);color:var(--og);font-weight:600;}
+.ttime{font-size:var(--text-base);color:rgba(255,255,255,0.45);font-variant-numeric:tabular-nums;}
+
+.body{display:flex;flex:1;min-height:0;}
+.left{width:220px;flex-shrink:0;border-right:1px solid var(--br);display:flex;flex-direction:column;}
+
+/* EVENT TIMELINE */
+.ph{padding:7px 10px 5px;border-bottom:1px solid var(--br);display:flex;align-items:center;justify-content:space-between;background:var(--bg1);flex-shrink:0;}
+.pt{font-size:var(--text-base);font-weight:700;color:var(--tx2);letter-spacing:0.3px;}
+.pc{font-size:var(--text-sm);color:var(--tx3);background:var(--bg2);padding:1px 6px;border-radius:8px;}
+.ev-divider{padding:5px 10px 3px;font-size:var(--text-2xs);font-weight:600;color:var(--tx3);background:var(--bg1);border-top:1px solid var(--br);border-bottom:1px solid var(--br);}
+.evlist{overflow-y:auto;flex:1;padding:6px 0;position:relative;min-height:0;}
+.evlist::before{content:'';position:absolute;left:14px;top:8px;bottom:8px;width:1px;background:var(--br);}
+.ev{position:relative;padding:7px 10px 7px 22px;border-bottom:1px solid transparent;cursor:pointer;transition:background .15s,opacity .2s;}
+.ev:hover{background:var(--nv1);}
+.ev.on{background:var(--nv1);border-left:3px solid var(--nv);}
+.ev.sub{padding:5px 10px 5px 28px;opacity:.82;}
+.ev.sub:hover{opacity:1;background:rgba(147,143,220,0.06);}
+.ev.sub::before{left:16px!important;top:11px!important;width:4px!important;height:4px!important;background:var(--pu)!important;border:none!important;box-shadow:none!important;}
+.ev.sub .edesc{font-size:var(--text-xs);font-weight:500;}
+.ev.archive{opacity:.68;}
+.ev.archive:hover{opacity:.88;}
+.ev.on::before{content:'';position:absolute;left:11px;top:12px;width:7px;height:7px;border-radius:50%;background:var(--nv);border:2px solid #fff;box-shadow:0 0 0 1px var(--nv);z-index:1;}
+.ev:not(.on):not(.sub):not(.archive)::before{content:'';position:absolute;left:12px;top:13px;width:5px;height:5px;border-radius:50%;background:var(--bg2);border:1px solid var(--br);z-index:1;}
+.ev.fresh .edesc{font-size:var(--text-base);font-weight:600;}
+.ev.fresh .esub{font-size:var(--text-xs);}
+.ev.urgent{background:var(--og1);border-left:3px solid var(--og);}
+.evr1{display:flex;align-items:center;gap:4px;margin-bottom:2px;flex-wrap:wrap;}
+.etime{font-size:var(--text-xs);color:var(--tx3);font-variant-numeric:tabular-nums;}
+.evr1 .etime{margin-left:auto;}
+.etag{font-size:var(--text-micro);font-weight:700;padding:1px 4px;border-radius:2px;letter-spacing:0.2px;}
+.etag.sys{background:var(--nv1);color:var(--nv);}
+.etag.report{background:var(--og1);color:var(--warning-dark);}
+.etag.call{background:var(--og1);color:var(--og-dark);}
+.etag.match{background:var(--pu1);color:var(--purple-dark);}
+.etag.field{background:var(--og1);color:var(--warning-dark);}
+.etag.done{background:var(--gn1);color:var(--safe-dark);}
+.edesc{font-size:var(--text-base);color:var(--tx);line-height:1.4;}
+.esub{font-size:var(--text-xs);color:var(--tx3);margin-top:2px;}
+.e-link{font-size:var(--text-2xs);color:var(--nv);font-weight:600;margin-top:2px;}
+
+.center{flex:1;min-width:0;display:flex;flex-direction:column;position:relative;}
+.mapwrap{flex:1;position:relative;overflow:hidden;background:var(--sea);}
+
+.map-callout,.dispatch-popup,.resolve-popup,.comm-popup,.archive-popup{z-index:14;}
+.comm-popup{z-index:15;}
+.dispatch-popup,.resolve-popup{z-index:16;}
+#realMap{position:absolute;inset:0;z-index:1;}
+.mapsvg{display:none;}
+.map-callout{position:absolute;bottom:10px;right:10px;top:auto;left:auto;z-index:12;width:268px;max-height:168px;overflow-y:auto;background:rgba(255,255,255,0.97);border:1px solid var(--br);border-radius:10px;padding:10px 12px;box-shadow:0 8px 28px rgba(0,0,0,0.22);display:none;font-size:var(--text-sm);line-height:1.5;color:var(--tx2);}
+.map-callout.show{display:block;}
+.map-callout .mc-actions{position:sticky;bottom:0;background:rgba(255,255,255,0.98);padding-top:6px;margin-top:4px;}
+.mc-head{display:flex;align-items:flex-start;gap:6px;margin-bottom:8px;}
+.mc-id{font-size:var(--text-lg);font-weight:700;color:var(--nv);}
+.mc-badge{font-size:var(--text-2xs);font-weight:700;padding:2px 6px;border-radius:3px;margin-left:auto;white-space:nowrap;}
+.mc-badge.active{background:var(--og1);color:var(--og-dark);}
+.mc-badge.pending{background:var(--og1);color:var(--warning-dark);}
+.mc-person{font-size:var(--text-base);font-weight:600;color:var(--tx);margin-bottom:6px;}
+.mc-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 8px;margin-bottom:8px;padding:6px 8px;background:var(--bg1);border-radius:6px;}
+.mc-cell{font-size:var(--text-2xs);color:var(--tx3);}
+.mc-cell span{display:block;font-size:var(--text-sm);font-weight:600;color:var(--tx);margin-top:1px;}
+.mc-sea{margin-bottom:8px;padding:6px 8px;background:rgba(24,46,125,0.06);border-radius:6px;border-left:2px solid var(--nv);}
+.mc-sea-t{font-size:var(--text-2xs);font-weight:700;color:var(--nv);margin-bottom:3px;}
+.mc-guards{margin-bottom:8px;}
+.mc-guard-row{display:flex;justify-content:space-between;align-items:center;font-size:var(--text-xs);padding:3px 0;border-bottom:1px solid var(--br);gap:4px;}
+.mc-guard-row:last-child{border:none;}
+.mc-guard-row b{color:var(--tx);}
+.mc-guard-info{flex:1;min-width:0;}
+
+.comm-btns{display:inline-flex;gap:3px;flex-shrink:0;}
+.comm-btn{width:22px;height:22px;border:none;border-radius:4px;cursor:pointer;font-size:var(--text-base);display:inline-flex;align-items:center;justify-content:center;font-family:inherit;padding:0;}
+.comm-btn.call{background:var(--gn1);color:var(--safe-dark);}
+.comm-btn.msg{background:var(--nv1);color:var(--nv);}
+.comm-btn:hover{filter:brightness(0.95);}
+
+.comm-popup{position:absolute;bottom:10px;right:10px;top:auto;left:auto;transform:none;width:268px;max-height:min(320px,calc(100% - 56px));display:none;flex-direction:column;overflow:hidden;background:#fff;border:1.5px solid var(--nv);border-radius:10px;z-index:15;box-shadow:0 8px 28px rgba(24,46,125,0.15);}
+.comm-popup.show{display:flex;}
+.cp-head{display:flex;align-items:center;gap:6px;padding:10px 12px 8px;flex-shrink:0;border-bottom:1px solid var(--br);}
+.cp-body{flex:1;overflow-y:auto;padding:8px 12px;min-height:0;}
+.cp-foot{display:flex;gap:6px;padding:8px 12px 10px;flex-shrink:0;border-top:1px solid var(--br);background:#fff;}
+.cp-foot .cp-btn{flex:1;margin-bottom:0;padding:8px;}
+.cp-foot .cp-btn.gh{background:var(--bg2);color:var(--tx2);}
+.cp-interrupt{display:none;font-size:var(--text-xs);color:var(--og);background:var(--og1);padding:5px 8px;border-radius:4px;margin-bottom:8px;line-height:1.4;}
+.cp-interrupt.show{display:block;}
+.cp-msg-status{font-size:var(--text-xs);color:var(--gn);background:var(--gn1);padding:5px 8px;border-radius:4px;margin-top:6px;line-height:1.4;display:none;}
+.cp-msg-status.show{display:block;}
+.cp-msg-status.err{color:var(--rd);background:var(--rd1);}
+.cp-title{font-size:var(--text-md);font-weight:700;color:var(--nv);flex:1;}
+.cp-target{font-size:var(--text-sm);color:var(--tx2);padding:5px 8px;background:var(--bg1);border-radius:5px;margin-bottom:8px;line-height:1.45;}
+.cp-target b{color:var(--tx);}
+.cp-tabs{display:flex;gap:4px;margin-bottom:10px;}
+.cp-tab{flex:1;padding:6px;border:none;border-radius:5px;font-size:var(--text-sm);font-weight:600;cursor:pointer;background:var(--bg2);color:var(--tx2);font-family:inherit;}
+.cp-tab.on{background:var(--nv);color:#fff;}
+.cp-status{text-align:center;font-size:var(--text-base);font-weight:600;color:var(--tx);margin-bottom:4px;min-height:16px;}
+.cp-status.ringing{color:var(--og);}
+.cp-status.connected{color:var(--gn);}
+.cp-timer{text-align:center;font-size:var(--text-4xl);font-weight:700;color:var(--nv);margin-bottom:10px;min-height:24px;font-variant-numeric:tabular-nums;}
+.cp-btn{width:100%;padding:9px;border:none;border-radius:6px;font-size:var(--text-base);font-weight:600;cursor:pointer;font-family:inherit;margin-bottom:6px;}
+.cp-btn.call{background:var(--gn);color:#fff;}
+.cp-btn.call.end{background:var(--rd);}
+.cp-btn.send{background:var(--nv);color:#fff;}
+.msg-tpls{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;}
+.msg-tpl{padding:4px 7px;border:1px solid var(--br);border-radius:4px;font-size:var(--text-2xs);background:var(--bg1);color:var(--tx2);cursor:pointer;font-family:inherit;}
+.msg-tpl:hover{border-color:var(--nv);color:var(--nv);}
+#commMsgText{width:100%;border:1px solid var(--br);border-radius:5px;padding:6px 8px;font-size:var(--text-sm);font-family:inherit;resize:none;margin-bottom:8px;}
+.cp-recent{max-height:72px;overflow-y:auto;font-size:var(--text-2xs);color:var(--tx3);padding:6px 8px;background:var(--bg1);border-radius:5px;line-height:1.5;}
+.cp-recent .in{color:var(--gn);}
+.cp-recent .out{color:var(--nv);}
+
+.comm-panel{padding:0 12px 10px;border-bottom:1px solid var(--br);}
+.comm-panel summary{padding:6px 0;font-size:var(--text-xs);font-weight:600;color:var(--tx3);cursor:pointer;list-style:none;}
+.comm-panel summary::-webkit-details-marker{display:none;}
+.comm-guard-row{display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid var(--br);font-size:var(--text-xs);}
+.comm-guard-row:last-child{border:none;}
+.comm-gname{flex:1;color:var(--tx);}
+.comm-gname b{font-weight:600;}
+.comm-gst{font-size:var(--text-2xs);color:var(--tx3);}
+.gitem .comm-btns{margin-left:auto;}
+.mc-actions{display:flex;gap:6px;}
+.mc-btn{flex:1;padding:7px;border:none;border-radius:5px;font-size:var(--text-sm);font-weight:600;cursor:pointer;font-family:inherit;}
+.mc-btn.prim{background:var(--nv);color:#fff;}
+.mc-btn.gh{background:var(--bg2);color:var(--tx2);}
+.mc-close{position:absolute;top:8px;right:10px;color:var(--tx3);cursor:pointer;font-size:var(--text-xl);line-height:1;}
+
+.leaflet-pin-label{background:transparent!important;border:none!important;}
+.pin-wrap{display:flex;flex-direction:column;align-items:center;pointer-events:auto;cursor:pointer;}
+.pin-wrap .pin-tag{background:rgba(8,18,36,0.92);color:#fff;padding:3px 7px;border-radius:4px;font-size:var(--text-xs);font-weight:600;white-space:nowrap;margin-bottom:3px;border:1px solid rgba(255,255,255,0.15);line-height:1.3;text-align:center;max-width:120px;}
+.pin-wrap.quiet .pin-tag{display:none;}
+.pin-wrap.quiet:hover .pin-tag,.pin-wrap.quiet.selected .pin-tag{display:block;}
+.pin-wrap .pin-tag sub{display:block;font-size:var(--text-micro);font-weight:500;opacity:0.75;margin-top:1px;}
+.pin-wrap .pin-dot{width:12px;height:12px;border-radius:50%;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.35);}
+.pin-wrap.emg .pin-dot{background:var(--og);}
+.pin-wrap.alert .pin-dot{background:var(--og);}
+.pin-wrap.watch .pin-dot{background:var(--pu);}
+.pin-wrap.guard .pin-dot{width:14px;height:14px;background:var(--gn);}
+.pin-wrap.guard.busy .pin-dot{background:var(--og);}
+.pin-wrap.selected .pin-tag{border-color:var(--og);box-shadow:0 0 0 2px rgba(247,159,71,0.4);}
+
+.overview-panel{padding:12px;}
+.ov-title{font-size:var(--text-lg);font-weight:700;color:var(--nv);margin-bottom:4px;}
+.ov-sub{font-size:var(--text-sm);color:var(--tx2);line-height:1.5;margin-bottom:10px;}
+.ov-stats{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;}
+.ov-stat{padding:8px;background:var(--bg1);border-radius:6px;text-align:center;}
+.ov-stat b{display:block;font-size:1rem;font-weight:700;color:var(--nv);}
+.ov-stat em{font-style:normal;font-size:var(--text-2xs);color:var(--tx3);}
+.ov-stat.hot b{color:var(--og-dark);}
+.ov-hint{font-size:var(--text-xs);color:var(--tx3);padding:8px;background:var(--bg1);border-radius:6px;line-height:1.45;}
+.ov-preview{margin-top:10px;padding:10px;background:var(--nv1);border-radius:8px;border:1px solid var(--nv2);}
+.ov-preview b{font-size:var(--text-base);color:var(--tx);display:block;margin-bottom:4px;}
+.ov-preview p{font-size:var(--text-xs);color:var(--tx2);margin-bottom:8px;line-height:1.4;}
+.ov-preview .ag-primary{margin-bottom:0;}
+
+.risk-brief-wrap{margin-top:8px;}
+.risk-brief{background:#fff;border:1px solid var(--br);border-radius:8px;padding:10px;font-size:var(--text-xs);line-height:1.45;color:var(--tx2);}
+.rb-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;gap:6px;}
+.rb-title{font-size:var(--text-sm);font-weight:700;color:var(--nv);}
+.rb-score{font-size:var(--text-xs);font-weight:700;white-space:nowrap;}
+.rb-note{font-size:var(--text-xs);color:var(--tx);background:var(--og1);border-left:2px solid var(--og);padding:6px 8px;border-radius:4px;margin-bottom:8px;line-height:1.5;}
+.rb-sub{font-size:var(--text-2xs);font-weight:700;color:var(--tx3);letter-spacing:0.4px;margin-bottom:4px;}
+.rb-signals{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:8px;}
+.rb-sig{padding:5px 6px;background:var(--bg1);border-radius:4px;border:1px solid var(--br);}
+.rb-sig span{display:block;font-size:var(--text-micro);color:var(--tx3);margin-bottom:1px;}
+.rb-sig b{font-size:var(--text-sm);color:var(--tx);font-weight:600;}
+.rb-sig.warn b{color:var(--og);}
+.rb-sig.bad b{color:var(--og-dark);}
+.rb-sig.ok b{color:var(--gn);}
+.rb-reasons{margin-bottom:8px;}
+.rb-reason{display:flex;gap:4px;align-items:flex-start;padding:2px 0;font-size:var(--text-xs);color:var(--tx);}
+.wp-status.ok{background:var(--safe-bg)!important;color:#15803d!important;}
+.rb-reason .material-symbols-outlined,.ri{color:var(--secondary)!important;}
+.rb-env{margin-bottom:8px;padding:6px 8px;background:rgba(24,46,125,0.05);border-radius:4px;}
+.rb-env-row{font-size:var(--text-xs);color:var(--tx);}
+.rb-check{border-top:1px dashed var(--br);padding-top:8px;}
+.rb-check-item{display:flex;align-items:flex-start;gap:5px;padding:3px 0;font-size:var(--text-xs);color:var(--tx);cursor:pointer;}
+.rb-check-item input{margin-top:2px;accent-color:var(--nv);}
+.mc-risk{margin-bottom:8px;}
+.mc-risk .risk-brief{border:none;padding:0;}
+
+.wp-panel{margin-top:8px;padding:8px;background:linear-gradient(180deg,var(--nv1) 0%,#fff 100%);border:1px solid var(--nv2);border-radius:8px;}
+.wp-head{display:flex;align-items:center;gap:6px;margin-bottom:6px;}
+.wp-head i{color:var(--nv);font-size:var(--text-xl);}
+.wp-title{font-size:var(--text-sm);font-weight:700;color:var(--nv);flex:1;}
+.wp-band{font-size:var(--text-xs);color:var(--tx2);margin-bottom:6px;line-height:1.45;}
+.wp-band b{color:var(--tx);}
+.wp-msg{font-size:var(--text-xs);color:var(--tx);background:#fff;border:1px solid var(--br);border-radius:5px;padding:6px 8px;margin-bottom:8px;line-height:1.5;}
+.wp-status{font-size:var(--text-xs);font-weight:600;padding:5px 8px;border-radius:4px;margin-bottom:8px;text-align:center;}
+.wp-status.pending{background:var(--og1);color:var(--warning-dark);}
+.wp-status.help{background:var(--og1);color:var(--og-dark);}
+.wp-status.ok{background:var(--gn1);color:var(--safe-dark);}
+.wp-status.timeout{background:var(--bg2);color:var(--tx2);}
+.wp-btn{width:100%;padding:8px;border:none;border-radius:5px;font-size:var(--text-sm);font-weight:600;cursor:pointer;font-family:inherit;margin-bottom:5px;}
+.wp-btn.send{background:var(--nv);color:#fff;}
+.wp-btn.send:disabled{opacity:0.45;cursor:not-allowed;}
+.wp-demo{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;padding-top:6px;border-top:1px dashed var(--br);}
+.wp-demo-t{font-size:var(--text-micro);color:var(--tx3);width:100%;margin-bottom:2px;}
+.wp-demo button{flex:1;min-width:72px;padding:4px 6px;border:1px solid var(--br);border-radius:4px;font-size:var(--text-2xs);background:#fff;color:var(--tx2);cursor:pointer;font-family:inherit;}
+.wp-demo button:hover{border-color:var(--nv);color:var(--nv);}
+
+.right.detail-mode .overview-panel{display:none;}
+.right.overview-mode .right-scroll .detail-fold,.right.overview-mode .right-scroll .sec-actions{display:none;}
+.right.overview-mode .right-top .action-guide,.right.overview-mode .right-top .task-summary{display:none;}
+.right.overview-mode .right-top .overview-panel{display:block;}
+.right.detail-mode .overview-panel{display:none;}
+
+.sbar.overview-mode .lc,.sbar.overview-mode .stid{display:none;}
+.sbar.overview-mode .snote{color:var(--nv);font-weight:500;}
+.map-attrib{position:absolute;bottom:10px;right:288px;z-index:8;font-size:var(--text-micro);color:rgba(255,255,255,0.45);background:rgba(0,0,0,0.35);padding:2px 6px;border-radius:3px;pointer-events:none;}
+.map-attrib.no-callout{right:8px;}
+
+.layer-bar{position:absolute;top:8px;left:8px;z-index:8;display:flex;gap:3px;background:rgba(12,28,48,0.88);padding:3px;border-radius:6px;border:1px solid rgba(255,255,255,0.1);backdrop-filter:blur(6px);}
+.lyr{padding:3px 7px;border-radius:4px;font-size:var(--text-2xs);font-weight:600;color:rgba(255,255,255,0.55);cursor:pointer;border:none;background:transparent;font-family:inherit;transition:all .15s;}
+.lyr.on{background:var(--nv);color:#fff;}
+.lyr:hover:not(.on){background:rgba(255,255,255,0.08);color:#fff;}
+
+.mtip{position:absolute;z-index:12;pointer-events:none;background:rgba(8,18,36,0.94);color:rgba(255,255,255,0.9);padding:6px 9px;border-radius:6px;font-size:var(--text-xs);line-height:1.5;max-width:175px;display:none;box-shadow:0 4px 16px rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.08);}
+.mtip.show{display:block;}
+.mtip b{color:var(--og);font-weight:600;}
+
+.chart-hud{position:absolute;bottom:10px;left:10px;z-index:9;background:rgba(8,18,36,0.9);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 10px;min-width:168px;max-width:200px;backdrop-filter:blur(8px);}
+.ch-title{font-size:var(--text-micro);font-weight:700;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.7px;margin-bottom:6px;}
+.ch-row{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:3px;font-size:var(--text-xs);color:rgba(255,255,255,0.55);}
+.ch-row b{color:#fff;font-weight:600;font-variant-numeric:tabular-nums;}
+.ch-row .tag{font-size:var(--text-micro);padding:1px 4px;border-radius:2px;font-weight:600;}
+.ch-row .tag.warn{background:rgba(247,159,71,0.2);color:var(--og);}
+.ch-row .tag.ok{background:rgba(45,184,122,0.18);color:#6DD4A8;}
+
+.chart-ctx{position:absolute;bottom:10px;right:10px;top:auto;z-index:9;width:268px;max-height:168px;overflow-y:auto;background:rgba(255,255,255,0.96);border:1px solid var(--br);border-radius:8px;padding:9px 10px;box-shadow:0 6px 24px rgba(0,0,0,0.18);display:none;}
+.chart-ctx.show{display:block;}
+.cx-head{display:flex;align-items:center;gap:5px;margin-bottom:6px;padding-bottom:5px;border-bottom:1px solid var(--br);}
+.cx-id{font-size:var(--text-base);font-weight:700;color:var(--nv);}
+.cx-badge{font-size:var(--text-micro);font-weight:700;padding:1px 5px;border-radius:2px;text-transform:uppercase;}
+.cx-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 8px;margin-bottom:6px;}
+.cx-cell{font-size:var(--text-2xs);color:var(--tx3);}
+.cx-cell span{display:block;font-size:var(--text-sm);font-weight:600;color:var(--tx);margin-top:1px;}
+.cx-note{font-size:var(--text-2xs);color:var(--tx2);line-height:1.45;padding:5px 6px;background:var(--bg1);border-radius:4px;border-left:2px solid var(--og);}
+
+.scale-bar{position:absolute;top:44px;right:10px;bottom:auto;z-index:9;display:flex;flex-direction:column;align-items:flex-end;gap:2px;}
+.scale-line{height:2px;background:rgba(255,255,255,0.6);border-left:1px solid rgba(255,255,255,0.6);border-right:1px solid rgba(255,255,255,0.6);}
+.scale-lbl{font-size:var(--text-micro);color:rgba(255,255,255,0.45);font-weight:600;}
+
+.mapsvg{width:100%;height:100%;display:block;transition:viewBox 0.45s cubic-bezier(0.4,0,0.2,1);}
+
+@keyframes focusRing{0%{r:10;opacity:.85}100%{r:26;opacity:0}}
+@keyframes focusRing2{0%{r:14;opacity:.5}100%{r:32;opacity:0}}
+.task-mk.dim{opacity:0.35;pointer-events:all}
+.task-mk.active{opacity:1}
+.person.dim-person{opacity:0.28}
+.person.focused circle.person-dot{stroke:#fff;stroke-width:2.5;filter:url(#glow)}
+.person.focused .focus-ring{animation:focusRing 1.6s ease-out infinite}
+
+.dispatch-info{margin-top:6px;padding:6px 8px;background:var(--nv1);border-radius:5px;border-left:2px solid var(--nv);}
+.di-row{display:flex;justify-content:space-between;font-size:var(--text-xs);color:var(--tx2);margin-bottom:2px;}
+.di-row b{color:var(--nv);font-weight:600;}
+.di-eta{font-size:var(--text-sm);font-weight:700;color:var(--og);margin-top:3px;}
+
+.cand-item{cursor:pointer;}
+.cand-item.on{background:var(--pu1);border-color:rgba(147,143,220,0.3);}
+
+/* ── 操作指引（右栏核心） ── */
+.right{width:280px;flex-shrink:0;border-left:1px solid var(--br);display:flex;flex-direction:column;overflow:hidden;}
+.right-top{flex-shrink:0;border-bottom:1px solid var(--br);background:#fff;}
+.right-scroll{flex:1;overflow-y:auto;min-height:0;}
+.action-guide{padding:10px 12px;border-bottom:1px solid var(--br);background:linear-gradient(180deg,var(--nv1) 0%,#fff 100%);}
+.ag-step{font-size:var(--text-2xs);font-weight:700;color:var(--nv);letter-spacing:0.4px;margin-bottom:4px;}
+.ag-hint{font-size:var(--text-base);font-weight:600;color:var(--tx);line-height:1.45;margin-bottom:8px;}
+.ag-meta{font-size:var(--text-xs);color:var(--tx2);margin-bottom:8px;padding:5px 8px;background:var(--bg1);border-radius:4px;line-height:1.5;}
+.ag-meta b{color:var(--tx);font-weight:600;}
+.ag-primary{width:100%;padding:10px 12px;border:none;border-radius:6px;font-size:var(--text-base);font-weight:700;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;margin-bottom:5px;transition:filter .15s;}
+.ag-primary:hover{filter:brightness(1.06);}
+.ag-primary.emg{background:var(--og);color:var(--og-dark);}
+.ag-primary.prim{background:var(--nv);color:#fff;}
+.ag-primary.gh{background:var(--bg2);color:var(--tx);}
+.ag-sub{font-size:var(--text-xs);font-weight:500;opacity:0.88;}
+.ag-row{display:flex;gap:5px;}
+.ag-row .ag-primary{flex:1;margin-bottom:0;font-size:var(--text-sm);padding:7px;flex-direction:row;}
+
+.task-summary{padding:7px 12px;}
+.ts-head{display:flex;align-items:center;gap:5px;margin-bottom:4px;flex-wrap:wrap;}
+.ts-id{font-size:var(--text-md);font-weight:700;color:var(--nv);}
+.ts-loc{font-size:var(--text-xs);color:var(--tx3);margin-left:auto;}
+.ts-facts{display:flex;flex-wrap:wrap;gap:4px;}
+.ts-fact{font-size:var(--text-2xs);padding:2px 6px;border-radius:3px;background:var(--bg1);color:var(--tx2);}
+.ts-fact.hot{background:var(--og1);color:var(--og-dark);font-weight:600;}
+
+.detail-fold{border-bottom:1px solid var(--br);flex-shrink:0;}
+.detail-fold summary{padding:6px 12px;font-size:var(--text-xs);font-weight:600;color:var(--tx3);cursor:pointer;list-style:none;display:flex;align-items:center;gap:4px;user-select:none;}
+.detail-fold summary::-webkit-details-marker{display:none;}
+.detail-fold summary::before{content:'▸';font-size:var(--text-2xs);transition:transform .15s;}
+.detail-fold[open] summary::before{transform:rotate(90deg);}
+.detail-fold .fold-body{padding:0 12px 8px;}
+.detail-fold .rlist{gap:2px;}
+.detail-fold .rrow{font-size:var(--text-xs);}
+
+.sec-actions{padding:4px 12px 6px;display:flex;justify-content:flex-end;position:relative;}
+.sec-link{font-size:var(--text-xs);color:var(--tx3);cursor:pointer;background:none;border:none;font-family:inherit;padding:2px 0;}
+.sec-link:hover{color:var(--nv);}
+.queue-fold summary{padding:6px 12px;font-size:var(--text-xs);font-weight:600;color:var(--tx3);cursor:pointer;list-style:none;display:flex;align-items:center;gap:4px;border-top:1px solid var(--br);background:var(--bg1);}
+.queue-fold summary::-webkit-details-marker{display:none;}
+.queue-fold summary::before{content:'▸';font-size:var(--text-2xs);transition:transform .15s;}
+.queue-fold[open] summary::before{transform:rotate(90deg);}
+.queue-fold .qcount{margin-left:auto;font-size:var(--text-2xs);color:var(--tx3);font-weight:500;}
+.info-toast{position:absolute;top:44px;left:10px;right:auto;transform:none;z-index:11;background:rgba(255,255,255,0.97);border:1px solid var(--pu);border-radius:8px;padding:8px 12px;max-width:260px;box-shadow:0 6px 20px rgba(0,0,0,0.15);display:none;font-size:var(--text-sm);color:var(--tx);line-height:1.45;}
+.info-toast.show{display:block;animation:toastIn .2s ease;}
+.info-toast b{color:var(--nv);}
+.info-toast .it-close{float:right;color:var(--tx3);cursor:pointer;font-size:var(--text-md);margin-left:8px;}
+@keyframes toastIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+
+.right .crisis,.right .assigned,.right .asec{display:none;}
+.ev.dim{opacity:.42;}
+.ev.on{opacity:1!important;}
+.mapwrap.focused .chart-hud,.mapwrap.focused .scale-bar{opacity:.55;transition:opacity .3s;}
+.sbar .rs-badge,#lc-rescue{display:none;}
+
+/* ── 求救状态（统一标识：求救中 / 待确认 / 无求救） ── */
+@keyframes rsPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.45;transform:scale(.82)}}
+.rs-badge{display:inline-flex;align-items:center;gap:5px;font-size:var(--text-2xs);font-weight:700;padding:2px 7px;border-radius:4px;letter-spacing:0.3px;white-space:nowrap;}
+.rs-badge .rs-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.rs-badge.active{background:var(--og1);color:var(--og-dark);border:1px solid rgba(247,159,71,0.35);}
+.rs-badge.active .rs-dot{background:var(--og);animation:rsPulse 1.3s infinite;}
+.rs-badge.pending{background:var(--og1);color:var(--warning-dark);border:1px solid rgba(247,159,71,0.35);}
+.rs-badge.pending .rs-dot{background:var(--og);}
+.rs-badge.none{background:var(--bg2);color:var(--tx3);border:1px solid var(--br);}
+.rs-badge.none .rs-dot{background:var(--tx3);opacity:.45;}
+.rs-badge.lg{font-size:var(--text-base);padding:7px 12px;border-radius:6px;width:100%;justify-content:center;margin-bottom:8px;box-sizing:border-box;}
+.rs-badge.lg .rs-dot{width:8px;height:8px;}
+.rs-badge.lg .rs-sub{font-size:var(--text-xs);font-weight:500;opacity:.75;margin-left:2px;}
+
+.rescue-global{display:flex;align-items:center;gap:6px;padding:4px 11px;border-radius:20px;font-size:var(--text-sm);font-weight:700;white-space:nowrap;}
+.rescue-global.active{background:rgba(186,104,104,0.22);color:#FFD0D0;border:1px solid rgba(186,104,104,0.45);}
+.rescue-global.calm{background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.55);border:1px solid rgba(255,255,255,0.14);}
+.rescue-global .rg-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.rescue-global.active .rg-dot{background:#FF7070;animation:rsPulse 1.3s infinite;}
+.rescue-global.calm .rg-dot{background:rgba(255,255,255,0.35);}
+
+.evr1 .rs-badge{margin-left:0;}
+.mapwrap.rescue-active{box-shadow:inset 0 0 0 3px rgba(186,104,104,0.55);}
+.mapwrap.rescue-pending{box-shadow:inset 0 0 0 3px rgba(247,159,71,0.4);}
+.qi .rs-badge{font-size:var(--text-micro);padding:1px 5px;}
+
+@keyframes foamShift{0%{transform:translateX(0)}100%{transform:translateX(-80px)}}
+@keyframes ripFlow{0%{stroke-dashoffset:20}100%{stroke-dashoffset:0}}
+@keyframes sweepPulse{0%,100%{opacity:.4}50%{opacity:.85}}
+
+.alert-popup{position:absolute;top:10px;right:10px;width:320px;max-height:calc(100% - 20px);overflow-y:auto;background:#fff;border:1.5px solid var(--og);border-radius:8px;padding:10px;z-index:13;display:none;box-shadow:0 6px 20px rgba(247,159,71,0.18);}
+.alert-popup.show{display:block;}
+.report-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0;}
+.report-field{display:flex;flex-direction:column;gap:3px;font-size:var(--text-2xs);color:var(--tx3);}
+.report-field.wide{grid-column:1/-1;}
+.report-field input,.report-field select{width:100%;padding:6px 7px;border:1px solid var(--br);border-radius:5px;background:#fff;color:var(--tx);font:10px inherit;box-sizing:border-box;}
+.report-check{display:flex;align-items:center;gap:5px;font-size:var(--text-xs);color:var(--tx2);}
+.map-degraded{position:absolute;top:44px;left:50%;transform:translateX(-50%);z-index:20;display:none;padding:6px 10px;border-radius:5px;background:#7A4A0F;color:#fff;font-size:var(--text-sm);font-weight:600;box-shadow:0 4px 14px rgba(0,0,0,.2);}
+.map-degraded.show{display:block;}
+
+.archive-popup{position:absolute;bottom:10px;right:10px;top:auto;width:268px;max-height:min(220px,calc(100% - 56px));overflow-y:auto;background:#fff;border:1.5px solid var(--gn);border-radius:8px;padding:10px 12px;z-index:14;display:none;box-shadow:0 6px 24px rgba(10,85,48,0.12);}
+.archive-popup.show{display:block;}
+.ar-head{display:flex;align-items:center;gap:6px;margin-bottom:6px;}
+.ar-icon{font-size:var(--text-xl);color:var(--gn);}
+.ar-title{font-size:var(--text-base);font-weight:700;color:var(--safe-dark);flex:1;}
+.ar-close{font-size:var(--text-xl);color:var(--tx3);cursor:pointer;line-height:1;padding:0 2px;}
+.ar-close:hover{color:var(--tx);}
+.ar-body{font-size:var(--text-sm);color:var(--tx2);line-height:1.55;margin-bottom:8px;}
+.ar-body b{color:var(--tx);font-weight:600;}
+.ar-meta{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;}
+.ar-tag{font-size:var(--text-2xs);padding:2px 6px;border-radius:3px;background:var(--gn1);color:var(--safe-dark);font-weight:600;}
+.ar-timeline{font-size:var(--text-xs);color:var(--tx3);line-height:1.6;padding:6px 8px;background:var(--bg1);border-radius:4px;margin-bottom:8px;}
+.ar-note{font-size:var(--text-2xs);color:var(--tx3);margin-bottom:8px;}
+.ar-btn{width:100%;padding:7px;border:none;border-radius:5px;background:var(--bg2);color:var(--tx2);font-size:var(--text-sm);font-weight:600;cursor:pointer;font-family:inherit;}
+.ar-btn:hover{background:var(--br);color:var(--tx);}
+.ap-head{display:flex;align-items:center;gap:6px;margin-bottom:6px;}
+.ap-icon{font-size:var(--text-xl);color:var(--og);}
+.ap-title{font-size:var(--text-base);font-weight:700;color:var(--og-dark);flex:1;}
+.ap-close{font-size:var(--text-md);color:var(--tx3);cursor:pointer;padding:0 2px;}
+.ap-body{font-size:var(--text-sm);color:var(--tx);line-height:1.5;margin-bottom:6px;}
+.ap-phone{display:flex;align-items:center;gap:5px;background:var(--nv1);border-radius:4px;padding:4px 7px;font-size:var(--text-sm);font-weight:600;color:var(--nv);margin-bottom:7px;}
+.ap-btns{display:flex;gap:5px;}
+.ap-btn{flex:1;padding:5px;border-radius:4px;font-size:var(--text-xs);font-weight:600;cursor:pointer;border:none;font-family:inherit;}
+.ap-btn.prim{background:var(--nv);color:#fff;}
+.ap-btn.sec{background:var(--bg2);color:var(--tx);}
+
+.dispatch-popup,.resolve-popup{position:absolute;bottom:10px;right:10px;top:auto;left:auto;transform:none;width:268px;max-height:min(240px,calc(100% - 56px));overflow-y:auto;background:#fff;border:1.5px solid var(--nv);border-radius:10px;padding:12px;z-index:16;display:none;box-shadow:0 8px 28px rgba(24,46,125,0.12);}
+.dispatch-popup.show,.resolve-popup.show{display:block;}
+.dp-head{display:flex;align-items:center;gap:6px;margin-bottom:10px;}
+.dp-title{font-size:var(--text-md);font-weight:700;color:var(--nv);flex:1;}
+.dp-close{font-size:var(--text-xl);color:var(--tx3);cursor:pointer;}
+.dp-task{font-size:var(--text-sm);color:var(--tx2);margin-bottom:8px;padding:5px 8px;background:var(--bg1);border-radius:4px;}
+.glist{display:flex;flex-direction:column;gap:5px;margin-bottom:10px;}
+.gitem{display:flex;align-items:center;gap:8px;padding:6px 8px;border:1px solid var(--br);border-radius:6px;cursor:pointer;}
+.gitem:hover{background:var(--nv1);border-color:var(--nv2);}
+.gitem.sel{background:var(--nv1);border-color:var(--nv);border-width:1.5px;}
+.gave{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:var(--text-xs);font-weight:700;color:#fff;flex-shrink:0;}
+.gname{font-size:var(--text-base);font-weight:500;color:var(--tx);}
+.gmeta{font-size:var(--text-xs);color:var(--tx3);}
+.gdist{font-size:var(--text-xs);color:var(--nv);font-weight:500;}
+.gstatus{font-size:var(--text-2xs);padding:1px 5px;border-radius:3px;font-weight:600;margin-left:auto;}
+.gstatus.free{background:var(--gn1);color:var(--safe-dark);}
+.gstatus.busy{background:var(--og1);color:var(--warning-dark);}
+.dp-confirm{width:100%;padding:8px;background:var(--nv);color:#fff;border:none;border-radius:6px;font-size:var(--text-base);font-weight:600;cursor:pointer;font-family:inherit;}
+.dp-confirm:disabled{opacity:0.4;cursor:not-allowed;}
+.res-opt{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;}
+.res-btn{padding:5px 10px;border-radius:5px;font-size:var(--text-xs);font-weight:600;cursor:pointer;border:1px solid var(--br);background:var(--bg1);font-family:inherit;color:var(--tx);}
+.res-btn.sel{border-color:var(--nv);background:var(--nv1);color:var(--nv);}
+
+.sbar{height:32px;background:var(--bg);border-top:1px solid var(--br);display:flex;align-items:center;padding:0 10px;gap:8px;flex-shrink:0;}
+.stid{font-size:var(--text-sm);font-weight:700;color:var(--nv);flex-shrink:0;}
+.lc{display:flex;align-items:center;gap:2px;}
+.lcs{font-size:var(--text-2xs);color:var(--tx3);padding:2px 5px;border-radius:3px;display:flex;align-items:center;gap:3px;white-space:nowrap;}
+.lcs::before{content:'';width:5px;height:5px;border-radius:50%;border:1.5px solid var(--tx3);background:transparent;flex-shrink:0;}
+.lcs.done{color:var(--nv);font-weight:500;}
+.lcs.done::before{background:var(--nv);border-color:var(--nv);}
+.lcs.on{background:var(--nv);color:#fff;font-weight:600;}
+.lcs.on::before{background:#fff;border-color:#fff;}
+.lca{font-size:var(--text-2xs);color:var(--tx3);}
+.ssep{width:1px;height:12px;background:var(--br);flex-shrink:0;}
+.snote{font-size:var(--text-xs);color:var(--tx2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0;}
+
+.crisis{padding:8px 10px;border-bottom:1px solid var(--br);}
+.crisis-label{font-size:var(--text-xs);font-weight:600;color:var(--tx2);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:5px;}
+.crisis-bar-wrap{height:6px;background:var(--bg2);border-radius:3px;overflow:hidden;margin-bottom:3px;}
+.crisis-bar{height:100%;border-radius:3px;transition:width .4s,background .3s;}
+.crisis-row{display:flex;justify-content:space-between;align-items:center;}
+.crisis-level{font-size:var(--text-base);font-weight:700;}
+.crisis-sub{font-size:var(--text-xs);color:var(--tx3);}
+.crisis-ticks{display:flex;gap:3px;margin-top:4px;}
+.ct{flex:1;height:3px;border-radius:1px;background:var(--bg2);}
+.ct.on{background:var(--og);}
+.ct.og{background:var(--og);}
+.crisis-note{font-size:var(--text-xs);color:var(--tx3);margin-top:3px;line-height:1.4;}
+
+.tcard{padding:8px 10px;border-bottom:1px solid var(--br);}
+.tidr{display:flex;align-items:center;gap:4px;margin-bottom:5px;flex-wrap:wrap;}
+.tid{font-size:var(--text-base);font-weight:700;color:var(--nv);}
+.rbadge{font-size:var(--text-micro);font-weight:700;padding:1px 5px;border-radius:2px;text-transform:uppercase;}
+.rbadge.emergency{background:var(--og1);color:var(--og-dark);}
+.rbadge.alert{background:var(--og1);color:var(--warning-dark);}
+.rbadge.watch{background:var(--nv1);color:var(--nv);}
+.rbadge.normal{background:var(--bg2);color:var(--tx2);}
+.sbadge{font-size:var(--text-micro);font-weight:600;padding:1px 5px;border-radius:2px;background:var(--bg2);color:var(--tx2);}
+.conf-row{display:flex;align-items:center;gap:6px;margin-bottom:5px;padding:4px 6px;background:var(--pu1);border-radius:4px;}
+.conf-val{font-size:var(--text-xl);font-weight:700;color:var(--purple-dark);}
+.conf-lbl{font-size:var(--text-2xs);color:var(--purple-dark);line-height:1.3;}
+.src-row{font-size:var(--text-xs);color:var(--tx2);margin-bottom:5px;}
+.src-row b{color:var(--tx);font-weight:600;}
+.tperson{display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid var(--br);margin-bottom:5px;}
+.avatar{width:24px;height:24px;border-radius:50%;background:var(--nv);color:#fff;font-size:var(--text-sm);font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.pname{font-size:var(--text-base);font-weight:500;color:var(--tx);}
+.pmeta{font-size:var(--text-xs);color:var(--tx3);}
+.rlist{display:flex;flex-direction:column;gap:3px;}
+.rrow{display:flex;align-items:flex-start;gap:4px;font-size:var(--text-xs);color:var(--tx2);line-height:1.35;}
+.ri{font-size:var(--text-sm);color:var(--nv);flex-shrink:0;margin-top:1px;}
+
+.candidates{padding:6px 10px;border-bottom:1px solid var(--br);display:none;}
+.candidates.show{display:block;}
+.cand-title{font-size:var(--text-2xs);font-weight:600;color:var(--tx3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;}
+.cand-item{display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:4px;cursor:pointer;margin-bottom:2px;border:1px solid transparent;}
+.cand-item:hover,.cand-item.on{background:var(--pu1);border-color:rgba(147,143,220,0.3);}
+.cand-id{font-size:var(--text-xs);font-weight:700;color:var(--nv);width:48px;}
+.cand-bar{flex:1;height:4px;background:var(--bg2);border-radius:2px;overflow:hidden;}
+.cand-fill{height:100%;background:var(--pu);border-radius:2px;}
+.cand-pct{font-size:var(--text-2xs);font-weight:600;color:var(--purple-dark);width:28px;text-align:right;}
+
+.assigned{padding:5px 10px;border-bottom:1px solid var(--br);background:var(--gn1);display:none;align-items:center;gap:6px;}
+.assigned.show{display:flex;}
+.ag-dot{width:6px;height:6px;border-radius:50%;background:var(--gn);flex-shrink:0;}
+.ag-txt{font-size:var(--text-sm);color:var(--safe-dark);font-weight:500;flex:1;}
+.ag-eta{font-size:var(--text-xs);color:var(--safe-dark);}
+
+.asec{padding:7px 10px;border-bottom:1px solid var(--br);}
+.al{font-size:var(--text-2xs);font-weight:600;color:var(--tx3);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:5px;}
+.abts{display:flex;flex-direction:column;gap:4px;}
+.abt{width:100%;padding:6px 9px;border-radius:5px;font-size:var(--text-sm);font-weight:500;cursor:pointer;border:none;text-align:left;font-family:inherit;display:flex;align-items:center;gap:5px;}
+.abt.emg{background:var(--og);color:var(--og-dark);}
+.abt.prim{background:var(--nv);color:#fff;}
+.abt.outline{background:transparent;color:var(--tx);border:1px solid var(--br);}
+.abt.gh{background:var(--bg2);color:var(--tx);}
+.more-wrap{position:relative;}
+.more-menu{position:absolute;top:100%;right:0;left:auto;width:140px;background:#fff;border:1px solid var(--br);border-radius:6px;padding:4px;margin-top:4px;display:none;box-shadow:0 4px 12px rgba(0,0,0,0.1);z-index:20;}
+.more-menu.show{display:block;}
+.more-item{width:100%;padding:5px 8px;border:none;background:transparent;text-align:left;font-size:var(--text-xs);color:var(--tx);cursor:pointer;border-radius:4px;font-family:inherit;}
+.more-item:hover{background:var(--bg1);}
+
+.qsec{flex:1;overflow-y:auto;min-height:0;}
+.qi{padding:6px 10px;border-bottom:1px solid var(--br);cursor:pointer;display:flex;align-items:center;gap:6px;}
+.qi:hover,.qi.on{background:var(--nv1);}
+.qbar{width:3px;height:30px;border-radius:2px;flex-shrink:0;}
+.qbar.emergency{background:var(--og);}
+.qbar.alert{background:var(--og);}
+.qbar.watch{background:var(--pu);}
+.qinfo{flex:1;min-width:0;}
+.qid{font-size:var(--text-xs);font-weight:700;color:var(--nv);}
+.qdesc{font-size:var(--text-sm);color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.qmeta{font-size:var(--text-xs);color:var(--tx3);}
+.qst{font-size:var(--text-micro);font-weight:700;padding:1px 4px;border-radius:2px;white-space:nowrap;}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top glass-bar">
+    <div class="logo"><span class="material-symbols-outlined fill">waves</span></div>
+    <div>
+      <span class="brand">AquaGuard</span>
+      <span class="brand-sub">Command Center</span>
+    </div>
+    <div class="tsep"></div>
+    <span class="tloc">北海银滩 · BEIHAI SILVER BEACH</span>
+    <div class="tenv">
+      <div class="tenv-i"><span class="material-symbols-outlined sm">wb_sunny</span><b>32°C</b> 晴转多云</div>
+      <div class="tenv-i"><span class="material-symbols-outlined sm">air</span>风速 <b>4.2m/s</b> SW</div>
+      <div class="tenv-i"><span class="material-symbols-outlined sm">tsunami</span>浪高 <b>0.8m</b></div>
+      <div class="tenv-i"><span class="material-symbols-outlined sm">trending_up</span>潮汐 <b>+0.4m</b></div>
+    </div>
+    <div class="tstats">
+      <div class="tst"><span class="tsn">1,284</span><span class="tsl">在滩</span></div>
+      <div class="tsep"></div>
+      <div class="tst"><span class="tsn" id="topTaskCount" style="color:var(--og)">4</span><span class="tsl">任务</span></div>
+      <div class="tsep"></div>
+      <div class="tst"><span class="tsn" id="topGuardCount" style="color:rgba(255,255,255,0.55)">5</span><span class="tsl">救生员</span></div>
+    </div>
+    <div class="tright">
+      <div class="rescue-global active" id="rescueGlobal"><span class="rg-dot"></span><span>求救阶段 · 3 起进行中</span></div>
+      <div class="ldot" id="ldot"></div><span class="ltxt" id="freshness" title="最近一次数据同步">数据同步</span>
+      <div class="tsep"></div>
+      <span class="ttime" id="clk">14:37:22</span>
+    </div>
+  </div>
+
+  <div class="body">
+    <div class="left glass-panel">
+      <div class="ph"><span class="pt">任务实时队列</span><span class="pc" id="evcnt">LIVE · 8</span></div>
+      <div class="evlist" id="evlist">
+        <div class="ev fresh urgent" data-ev="0" onclick="showCallPopup()">
+          <div class="evr1"><span class="etag call">来电</span><span class="etime">14:39</span><span class="rs-badge pending"><span class="rs-dot"></span>待确认</span></div>
+          <div class="edesc">家长报案 · 男孩失踪</div>
+          <div class="esub">6岁 · 红色泳裤 · 悬浮窗接听</div>
+        </div>
+        <div class="ev fresh" data-ev="1" data-task="T-003" onclick="openEvent(1)">
+          <div class="evr1"><span class="etag sys">系统</span><span class="etime">14:37</span></div>
+          <div class="edesc">心率异常 · C-4 中水区</div>
+          <div class="esub">女性 · 约34岁 · HR 148bpm</div>
+        </div>
+        <div class="ev" data-ev="2" data-task="T-004" onclick="openEvent(2)">
+          <div class="evr1"><span class="etag report">报案</span><span class="etime">14:31</span></div>
+          <div class="edesc">7岁儿童走失 · B-2 浅水带</div>
+          <div class="esub">最后目击 14:15 · 黄色游泳圈</div>
+        </div>
+        <div class="ev sub" data-ev="3" onclick="openSubEvent(3)">
+          <div class="evr1"><span class="etag match">匹配</span><span class="etime">14:31</span></div>
+          <div class="edesc">↳ 手环 A-2213 信号匹配 92%</div>
+        </div>
+        <div class="ev" data-ev="4" data-task="T-005" onclick="openEvent(4)">
+          <div class="evr1"><span class="etag sys">系统</span><span class="etime">14:28</span></div>
+          <div class="edesc">越界 · 东段深水区</div>
+          <div class="esub">男性 · 约22岁 · 距岸280m</div>
+        </div>
+        <div class="ev sub" data-ev="5" onclick="openSubEvent(5)">
+          <div class="evr1"><span class="etag field">现场</span><span class="etime">14:22</span></div>
+          <div class="edesc">↳ 救生员上报溺水前兆 · 已合并</div>
+        </div>
+        <div class="ev" data-ev="6" data-task="T-006" onclick="openEvent(6)">
+          <div class="evr1"><span class="etag sys">系统</span><span class="etime">14:11</span><span class="rs-badge pending"><span class="rs-dot"></span>待确认</span></div>
+          <div class="edesc">静止异常 · D-1 中水区</div>
+          <div class="esub">疑似 A-3312 · 静止 8min+ · 手环确认</div>
+        </div>
+        <div class="ev-divider">历史记录 · 仅查阅</div>
+        <div class="ev archive" data-ev="7" onclick="showArchivePopup()">
+          <div class="evr1"><span class="etag done">完成</span><span class="etime">14:18</span><span class="rs-badge none"><span class="rs-dot"></span>无求救</span></div>
+          <div class="edesc">T-001 已解决 · 误报关闭</div>
+          <div class="esub">响应 4m12s · 悬浮窗查看</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="center">
+      <div class="layer-bar" id="layerBar">
+        <button class="lyr on" data-layer="people" onclick="toggleLayer('people',this)">人员</button>
+        <button class="lyr on" data-layer="env" onclick="toggleLayer('env',this)">环境</button>
+        <button class="lyr on" data-layer="tasks" onclick="toggleLayer('tasks',this)">任务</button>
+        <button class="lyr on" data-layer="search" onclick="toggleLayer('search',this)">搜索</button>
+        <button class="lyr on" onclick="exitToOverview()" title="返回全域纵览">纵览</button>
+      </div>
+      <div class="mtip" id="mtip"></div>
+      <div class="info-toast" id="infoToast"></div>
+
+      <div class="alert-popup" id="alertPop">
+        <div class="ap-head">
+          <span class="material-symbols-outlined fill sm ap-icon">phone_callback</span>
+          <span class="ap-title">紧急来电 · 家长报案</span>
+          <span class="ap-close" onclick="closeAlert()">×</span>
+        </div>
+        <div class="ap-body"><b>来电信息登记</b>。确认关键信息后再创建搜索任务，避免重复报案或错误定位。</div>
+        <div class="ap-phone"><span class="material-symbols-outlined sm">call</span> 138 0779 2234</div>
+        <div class="report-grid">
+          <label class="report-field">年龄<input id="reportAge" type="number" min="1" max="99" value="6"></label>
+          <label class="report-field">最后区域<select id="reportZone"><option>A-1</option><option selected>B-2</option><option>C-4</option><option>D-1</option></select></label>
+          <label class="report-field">最后目击时间<input id="reportTime" type="time" value="14:20"></label>
+          <label class="report-field">家长等候点<input id="reportStation" value="S-03 东段救援站"></label>
+          <label class="report-field wide">外貌与随身物品<input id="reportDesc" value="红色泳裤 · 黄色游泳圈"></label>
+          <label class="report-check wide"><input id="reportBand" type="checkbox" checked> 已确认佩戴安全手环</label>
+        </div>
+        <div class="ar-note" style="margin-bottom:7px;">创建后进入“待确认”，不会直接判定为已求救。</div>
+        <div class="ap-btns">
+          <button class="ap-btn prim" onclick="createTaskFromAlert()">创建任务 T-007</button>
+          <button class="ap-btn sec" onclick="closeAlert()">关闭 · 继续当前处置</button>
+        </div>
+      </div>
+
+      <div class="mapwrap" id="mapwrap">
+        <div class="map-degraded" id="mapDegraded">在线底图异常，已保留任务坐标与离线态势层</div>
+        <div id="realMap"></div>
+        <div class="archive-popup" id="archivePop">
+          <div class="ar-head">
+            <span class="material-symbols-outlined sm ar-icon">inventory_2</span>
+            <span class="ar-title" id="ar-title">T-001 已归档</span>
+            <span class="ar-close" onclick="closeArchive()" title="关闭">×</span>
+          </div>
+          <div class="ar-body" id="ar-body"></div>
+          <div class="ar-meta" id="ar-meta"></div>
+          <div class="ar-timeline" id="ar-timeline"></div>
+          <div class="ar-note">仅查阅记录，不影响当前处置界面</div>
+          <button class="ar-btn" onclick="closeArchive()">知道了</button>
+        </div>
+        <div class="dispatch-popup" id="dispatchPop">
+          <div class="dp-head">
+            <span class="material-symbols-outlined sm" style="color:var(--nv)">person_check</span>
+            <span class="dp-title">派遣救生员</span>
+            <span class="dp-close" onclick="closeDispatch()">×</span>
+          </div>
+          <div class="dp-task" id="dp-task-info">任务 T-003 · 心率异常 · C-4</div>
+          <div class="glist" id="glist"></div>
+          <button class="dp-confirm" id="dp-confirm" disabled onclick="confirmDispatch()">确认指派</button>
+        </div>
+        <div class="resolve-popup" id="resolvePop">
+          <div class="dp-head">
+            <span class="material-symbols-outlined sm" style="color:var(--gn)">check</span>
+            <span class="dp-title">任务回写</span>
+            <span class="dp-close" onclick="closeResolve()">×</span>
+          </div>
+          <div class="dp-task" id="resolve-task-info">T-003 · 选择处理结果</div>
+          <div class="res-opt" id="resOpts">
+            <button class="res-btn" onclick="pickResolve(this,'found')">已找到</button>
+            <button class="res-btn" onclick="pickResolve(this,'notfound')">未找到</button>
+            <button class="res-btn" onclick="pickResolve(this,'false')">误报</button>
+            <button class="res-btn" onclick="pickResolve(this,'continue')">继续搜索</button>
+            <button class="res-btn" onclick="pickResolve(this,'escalate')">转交中心</button>
+          </div>
+          <button class="dp-confirm" id="resolve-confirm" disabled onclick="confirmResolve()">确认回写</button>
+        </div>
+        <div class="comm-popup" id="commPop">
+          <div class="cp-head">
+            <span class="material-symbols-outlined sm" style="color:var(--nv)">headset_mic</span>
+            <span class="cp-title">调度通联</span>
+            <span class="dp-close" onclick="closeComm()">×</span>
+          </div>
+          <div class="cp-body">
+            <div class="cp-target" id="commTarget"></div>
+            <div class="cp-tabs">
+              <button class="cp-tab on" id="commTabCall" onclick="switchCommTab('call')">电台通话</button>
+              <button class="cp-tab" id="commTabMsg" onclick="switchCommTab('msg')">文字留言</button>
+            </div>
+            <div class="cp-interrupt" id="commInterrupt">通话已暂挂 · 留言将作为插播优先推送</div>
+            <div id="commCallView">
+              <div class="cp-status" id="commStatus">点击下方按钮发起通话</div>
+              <div class="cp-timer" id="commTimer"></div>
+              <button class="cp-btn call" id="commCallBtn" onclick="toggleGuardCall()">发起通话</button>
+            </div>
+            <div id="commMsgView" style="display:none">
+              <div class="msg-tpls">
+                <button class="msg-tpl" onclick="fillCommMsg('请立即前往事发点，收到请按 1 确认')">前往事发点</button>
+                <button class="msg-tpl" onclick="fillCommMsg('请回报现场情况与人员状态')">回报现场</button>
+                <button class="msg-tpl" onclick="fillCommMsg('注意暗流区，建议从西侧接近')">暗流提醒</button>
+                <button class="msg-tpl" onclick="fillCommMsg('请等待指挥中心下一步指令')">待命</button>
+              </div>
+              <textarea id="commMsgText" rows="3" placeholder="输入留言内容，将推送至救生员电台终端…"></textarea>
+              <button class="cp-btn send" onclick="sendGuardMessage()">发送留言</button>
+              <div class="cp-msg-status" id="commMsgStatus"></div>
+            </div>
+            <div class="cp-recent" id="commRecent"></div>
+          </div>
+          <div class="cp-foot">
+            <button class="cp-btn gh" id="commBackCall" style="display:none" onclick="switchCommTab('call')">返回通话</button>
+            <button class="cp-btn gh" onclick="closeComm()">关闭通联</button>
+          </div>
+        </div>
+        <div class="map-callout" id="mapCallout">
+          <span class="mc-close" onclick="closeMapCallout()">×</span>
+          <div id="mapCalloutBody"></div>
+        </div>
+        <div class="map-attrib no-callout">© OpenStreetMap · 北海银滩 WGS84</div>
+        <div class="chart-hud" id="chartHud">
+          <div class="ch-title">海域实况 · <span id="hudZone">银滩全域</span></div>
+          <div class="ch-row"><span>有效波高 Hs</span><b id="hudHs">0.8 m</b></div>
+          <div class="ch-row"><span>风向 Wind</span><b id="hudWind">SW 4.2 m/s</b></div>
+          <div class="ch-row"><span>潮位 Tide</span><b id="hudTide">+0.4 m ↑</b></div>
+          <div class="ch-row"><span>估计水深</span><b id="hudDepth">—</b></div>
+          <div class="ch-row"><span>离岸流 Rip</span><span class="tag warn" id="hudRip">—</span></div>
+          <div class="ch-row"><span>数据来源</span><b style="font-size:var(--text-2xs)">海洋站+网格模型</b></div>
+        </div>
+        <div class="chart-ctx" id="chartCtx"></div>
+        <div class="scale-bar"><div class="scale-line" style="width:72px;"></div><span class="scale-lbl">0 — 200 m</span></div>
+        <svg class="mapsvg" id="mapsvg" viewBox="0 0 960 600" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="chartSea" x1="0" y1="0.15" x2="0" y2="1">
+              <stop offset="0%" stop-color="#2E6B8A"/><stop offset="45%" stop-color="#1E4F6E"/><stop offset="100%" stop-color="#0B2238"/>
+            </linearGradient>
+            <linearGradient id="shoalGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#3A8FA8" stop-opacity="0.55"/><stop offset="100%" stop-color="#2A7088" stop-opacity="0.15"/>
+            </linearGradient>
+            <linearGradient id="sandGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#D8CCAE"/><stop offset="100%" stop-color="#B8A888"/>
+            </linearGradient>
+            <pattern id="chartGrid" width="48" height="48" patternUnits="userSpaceOnUse">
+              <path d="M48 0 L0 0 0 48" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="0.5"/>
+            </pattern>
+            <filter id="glow"><feGaussianBlur stdDeviation="1.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            <marker id="windArr" markerWidth="4" markerHeight="4" refX="3" refY="2" orient="auto"><path d="M0,0 L4,2 L0,4 Z" fill="#F79F47"/></marker>
+          </defs>
+          <rect width="960" height="600" fill="url(#chartSea)"/>
+          <rect width="960" height="600" fill="url(#chartGrid)"/>
+          <path id="coastLine" d="M0,118 C80,122 160,108 240,112 C320,116 400,128 480,122 C560,116 640,130 720,126 C800,122 880,134 960,128 L960,168 C880,164 800,176 720,172 C640,168 560,182 480,176 C400,170 320,158 240,162 C160,166 80,152 0,156 Z" fill="url(#sandGrad)"/>
+          <path d="M0,0 L960,0 L960,118 C880,114 800,126 720,122 C640,118 560,132 480,126 C400,120 320,108 240,112 C160,116 80,102 0,106 Z" fill="#2D4530" opacity="0.9"/>
+          <path d="M0,106 C80,102 160,116 240,112 C320,108 400,120 480,126 C560,132 640,118 720,122 C800,126 880,114 960,118 L960,128 C880,134 800,122 720,126 C640,130 560,116 480,122 C400,128 320,116 240,112 C160,108 80,122 0,118 Z" fill="#3A5535" opacity="0.75"/>
+          <g id="layer-env" class="map-layer">
+            <path d="M0,156 C80,152 160,166 240,162 C320,158 400,170 480,176 C560,182 640,168 720,172 C800,176 880,164 960,168 L960,198 C880,194 800,206 720,202 C640,198 560,212 480,206 C400,200 320,188 240,192 C160,196 80,182 0,186 Z" fill="rgba(255,255,255,0.07)"/>
+            <g style="animation:foamShift 10s linear infinite"><path d="M-40,188 Q200,180 440,188 Q680,196 920,188 L1000,188 L1000,204 L-40,204 Z" fill="rgba(255,255,255,0.12)"/></g>
+            <text x="14" y="148" font-size="7" fill="rgba(210,195,160,0.7)" font-weight="600" font-family="Hanken Grotesk,sans-serif">干沙滩 Dry Sand</text>
+            <text x="14" y="182" font-size="7" fill="rgba(255,255,255,0.45)" font-weight="600" font-family="Hanken Grotesk,sans-serif">碎浪带 Surf Zone</text>
+            <g fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="0.7">
+              <path d="M0,186 C240,192 480,206 720,202 C960,198"/><path d="M0,216 C240,222 480,236 720,232 C960,228"/>
+              <path d="M0,256 C240,262 480,276 720,272 C960,268"/><path d="M0,306 C240,312 480,326 720,322 C960,318"/>
+              <path d="M0,368 C240,374 480,388 720,384 C960,380"/>
+            </g>
+            <g font-size="7" fill="rgba(255,255,255,0.35)" font-family="Hanken Grotesk,sans-serif"><text x="878" y="194">0.5m</text><text x="878" y="224">1.0m</text><text x="878" y="264">2.0m</text><text x="878" y="314">3.0m</text><text x="878" y="376">5.0m</text></g>
+            <rect x="0" y="186" width="960" height="82" fill="url(#shoalGrad)"/>
+            <path d="M0,256 C480,276 960,268" stroke="rgba(247,159,71,0.75)" stroke-width="1.2" fill="none" stroke-dasharray="8 5"/>
+            <rect x="14" y="246" width="88" height="12" rx="2" fill="rgba(247,159,71,0.15)"/><text x="58" y="255" text-anchor="middle" font-size="7" fill="#C89040" font-weight="600" font-family="Hanken Grotesk,sans-serif">建议泳界 ~2m</text>
+            <path d="M0,306 C480,326 960,318" stroke="rgba(186,104,104,0.7)" stroke-width="1" fill="none" stroke-dasharray="4 4"/>
+            <rect x="14" y="296" width="72" height="12" rx="2" fill="rgba(247,159,71,0.14)"/><text x="50" y="305" text-anchor="middle" font-size="7" fill="#F79F47" font-weight="600" font-family="Hanken Grotesk,sans-serif">深水界 3m+</text>
+            <path d="M0,158 C480,172 960,160" stroke="rgba(247,159,71,0.5)" stroke-width="0.8" fill="none" stroke-dasharray="3 4"/>
+            <text x="820" y="154" font-size="7" fill="rgba(247,159,71,0.7)" font-family="Hanken Grotesk,sans-serif">高潮线 HW · +0.4m</text>
+            <ellipse cx="548" cy="288" rx="88" ry="32" fill="rgba(147,143,220,0.08)" stroke="rgba(147,143,220,0.45)" stroke-width="0.8" stroke-dasharray="4 3"/>
+            <g stroke="rgba(167,160,230,0.65)" stroke-width="1" fill="none" stroke-dasharray="5 5" style="animation:ripFlow 2.5s linear infinite">
+              <path d="M510,278 Q548,318 588,358"/><path d="M530,274 Q568,314 608,354"/><path d="M490,282 Q528,322 568,362"/>
+            </g>
+            <text x="548" y="284" text-anchor="middle" font-size="7" fill="#A89AD4" font-weight="700" font-family="Hanken Grotesk,sans-serif">离岸流 Rip · C3</text>
+            <g stroke="rgba(255,255,255,0.08)" stroke-width="0.5"><line x1="192" y1="156" x2="192" y2="580"/><line x1="384" y1="156" x2="384" y2="580"/><line x1="576" y1="156" x2="576" y2="580"/><line x1="768" y1="156" x2="768" y2="580"/></g>
+            <g font-size="8" fill="rgba(255,255,255,0.2)" font-weight="700" font-family="Hanken Grotesk,sans-serif"><text x="96" y="174" text-anchor="middle">A</text><text x="288" y="174" text-anchor="middle">B</text><text x="480" y="174" text-anchor="middle">C</text><text x="672" y="174" text-anchor="middle">D</text><text x="864" y="174" text-anchor="middle">E</text></g>
+            <g transform="translate(888,48)"><circle r="22" fill="rgba(8,18,36,0.75)" stroke="rgba(255,255,255,0.12)"/><text y="-14" text-anchor="middle" font-size="7" fill="rgba(255,255,255,0.5)" font-family="Hanken Grotesk,sans-serif">N</text><line x1="6" y1="6" x2="-10" y2="-10" stroke="#F79F47" stroke-width="2" marker-end="url(#windArr)"/><text y="18" text-anchor="middle" font-size="6" fill="rgba(255,255,255,0.45)" font-family="Hanken Grotesk,sans-serif">SW 4.2</text></g>
+          </g>
+          <g id="layer-search" class="map-layer"><g id="searchOverlays" opacity="0.9"></g><g id="routeOverlay"></g></g>
+
+          <!-- 设施 -->
+          <g id="layer-env-fac">
+            <g data-tip="S-01 西段救援站">
+              <rect x="72" y="148" width="42" height="24" rx="3" fill="rgba(24,46,125,0.92)"/>
+              <text x="93" y="157" text-anchor="middle" font-size="7" fill="#fff" font-weight="600" font-family="Hanken Grotesk,sans-serif">救援站</text>
+              <text x="93" y="167" text-anchor="middle" font-size="7" fill="rgba(255,255,255,0.55)" font-family="Hanken Grotesk,sans-serif">S-01</text>
+            </g>
+            <g data-tip="S-02 中段瞭望台">
+              <rect x="448" y="132" width="42" height="24" rx="3" fill="rgba(24,46,125,0.92)"/>
+              <text x="469" y="141" text-anchor="middle" font-size="7" fill="#fff" font-weight="600" font-family="Hanken Grotesk,sans-serif">瞭望台</text>
+              <text x="469" y="151" text-anchor="middle" font-size="7" fill="rgba(255,255,255,0.55)" font-family="Hanken Grotesk,sans-serif">S-02</text>
+            </g>
+            <g data-tip="S-03 东段救援站">
+              <rect x="820" y="138" width="42" height="24" rx="3" fill="rgba(24,46,125,0.92)"/>
+              <text x="841" y="147" text-anchor="middle" font-size="7" fill="#fff" font-weight="600" font-family="Hanken Grotesk,sans-serif">救援站</text>
+              <text x="841" y="157" text-anchor="middle" font-size="7" fill="rgba(255,255,255,0.55)" font-family="Hanken Grotesk,sans-serif">S-03</text>
+            </g>
+            <!-- 情人桥示意 -->
+            <path d="M380,148 L380,168 M370,158 L390,158" stroke="rgba(24,46,125,0.25)" stroke-width="1.5" fill="none"/>
+            <text x="380" y="178" text-anchor="middle" font-size="6" fill="rgba(24,46,125,0.4)" font-family="Hanken Grotesk,sans-serif">情人桥</text>
+            <circle cx="155" cy="188" r="5" fill="none" stroke="#F79F47" stroke-width="2"/><circle cx="155" cy="188" r="2" fill="#F79F47"/>
+            <circle cx="620" cy="178" r="5" fill="none" stroke="#F79F47" stroke-width="2"/><circle cx="620" cy="178" r="2" fill="#F79F47"/>
+            <rect x="748" y="248" width="32" height="13" rx="3" fill="#F79F47" opacity="0.9"/>
+            <text x="764" y="257" text-anchor="middle" font-size="7" fill="#fff" font-weight="600" font-family="Hanken Grotesk,sans-serif">冲锋艇</text>
+          </g>
+
+          <g id="layer-people" class="map-layer"><g id="peopleMarkers"></g></g>
+
+          <!-- 任务图层 -->
+          <g id="layer-tasks" class="map-layer">
+            <g id="taskMarkers"></g>
+          </g>
+
+          <rect x="14" y="518" width="148" height="68" rx="4" fill="rgba(8,18,36,0.82)" stroke="rgba(255,255,255,0.1)"/>
+          <text x="22" y="532" font-size="7" fill="rgba(255,255,255,0.45)" font-weight="600" font-family="Hanken Grotesk,sans-serif">CHART LEGEND</text>
+          <line x1="22" y1="542" x2="38" y2="542" stroke="rgba(255,255,255,0.25)" stroke-width="0.7"/><text x="42" y="545" font-size="6" fill="rgba(255,255,255,0.4)" font-family="Hanken Grotesk,sans-serif">等深线 Depth</text>
+          <line x1="22" y1="554" x2="38" y2="554" stroke="#C89040" stroke-width="1.2" stroke-dasharray="4 3"/><text x="42" y="557" font-size="6" fill="rgba(255,255,255,0.4)" font-family="Hanken Grotesk,sans-serif">建议泳界 Swim limit</text>
+          <line x1="22" y1="566" x2="38" y2="566" stroke="#F79F47" stroke-width="1" stroke-dasharray="3 3"/><text x="42" y="569" font-size="6" fill="rgba(255,255,255,0.4)" font-family="Hanken Grotesk,sans-serif">深水界 Deep limit</text>
+          <circle cx="28" cy="578" r="3" fill="#A89AD4"/><text x="42" y="581" font-size="6" fill="rgba(255,255,255,0.4)" font-family="Hanken Grotesk,sans-serif">离岸流 Rip zone</text>
+        </svg>
+      </div>
+
+      <div class="sbar glass-timeline overview-mode" id="sbar">
+        <span class="stid" id="lc-tid">—</span>
+        <span id="lc-rescue"></span>
+        <div class="lc" id="lifecycle">
+          <span class="lcs done">检测</span><span class="lca">›</span>
+          <span class="lcs done">确认</span><span class="lca">›</span>
+          <span class="lcs on">派遣</span><span class="lca">›</span>
+          <span class="lcs">处置</span><span class="lca">›</span>
+          <span class="lcs">完成</span>
+        </div>
+        <div class="ssep"></div>
+        <span class="snote" id="lc-note">银滩全域纵览 · 点击事件查看地图标注 · 3 起求救进行中</span>
+      </div>
+    </div>
+
+    <div class="right glass-panel overview-mode" id="rightPanel">
+      <div class="right-top">
+        <div class="overview-panel" id="overviewPanel">
+          <div class="ov-title">银滩全域监控</div>
+          <div class="ov-sub">默认纵览全局。点击左侧事件，地图直接标注人员位置、海域实况与救生员信息。</div>
+          <div class="ov-stats">
+            <div class="ov-stat hot"><b id="ovRescue">3</b><em>求救进行中</em></div>
+            <div class="ov-stat"><b id="ovTasks">4</b><em>活跃任务</em></div>
+            <div class="ov-stat"><b id="ovGuards">5</b><em>在岗救生员</em></div>
+            <div class="ov-stat"><b>1,284</b><em>在滩人数</em></div>
+          </div>
+          <div class="ov-hint" id="ovHint">尚未选择事件。试试点击「静止异常 · D-1」或「家长报案 · 男孩失踪」。</div>
+          <div id="ovRiskBrief" class="risk-brief-wrap" style="display:none"></div>
+          <div id="ovPreview"></div>
+        </div>
+        <details class="comm-panel" open>
+          <summary id="guardSummary">救生员通联 · 5 人在线</summary>
+          <div id="commGuardList"></div>
+        </details>
+        <div class="action-guide" id="actionGuide"></div>
+        <div class="task-summary" id="taskSummary"></div>
+      </div>
+      <div class="right-scroll">
+        <details class="detail-fold" id="riskFold">
+          <summary id="riskFoldSummary">风险研判 · 确认前请对照</summary>
+          <div class="fold-body"><div class="tcard" id="tcard" style="padding:0;border:none;"></div></div>
+        </details>
+
+        <details class="detail-fold" id="candFold" style="display:none;">
+          <summary>候选匹配 · 点击定位地图</summary>
+          <div class="fold-body"><div class="candidates" id="candidates" style="padding:0;border:none;"></div></div>
+        </details>
+
+        <div class="sec-actions">
+          <button class="sec-link" onclick="toggleMore(event)">更多操作 ▾</button>
+          <div class="more-menu" id="moreMenu">
+            <button class="more-item" onclick="doAct('expand')">扩大搜索</button>
+            <button class="more-item" onclick="doAct('lock')">锁定区域</button>
+            <button class="more-item" onclick="openComm('LG-02','call')">联系最近救生员</button>
+            <button class="more-item" onclick="doAct('broadcast')">全区广播</button>
+            <button class="more-item" onclick="doAct('escalate')">升级警报</button>
+            <button class="more-item" onclick="doAct('false')">标记误报</button>
+            <button class="more-item" onclick="openResolve()">完成任务回写</button>
+          </div>
+        </div>
+
+        <details class="queue-fold">
+          <summary>切换其他任务 <span class="qcount" id="queueCount">3</span></summary>
+          <div class="qsec" id="qsec"></div>
+        </details>
+      </div>
+
+      <!-- 保留 DOM 供脚本引用，隐藏 -->
+      <div class="crisis" style="display:none!important"><div class="crisis-bar" id="cbar"></div><span id="clevel"></span><span id="csub"></span><span id="crisisNote"></span><span id="rtid"></span></div>
+      <div class="assigned" id="assigned-strip" style="display:none!important"><span id="ag-txt"></span><span id="ag-eta"></span></div>
+      <button id="btnDispatch" style="display:none" onclick="openDispatch()"></button>
+    </div>
+  </div>
+</div>
+
+<script>
+const clk=document.getElementById('clk');
+let lastDataSync=Date.now();
+function tick(){
+  clk.textContent=new Date().toTimeString().slice(0,8);
+  const age=Math.floor((Date.now()-lastDataSync)/1000);
+  const freshness=document.getElementById('freshness');
+  if(freshness)freshness.textContent=age<5?'数据 <5s':`数据 ${age}s`;
+}
+tick();setInterval(tick,1000);
+let v=1;const ld=document.getElementById('ldot');
+setInterval(()=>{ld.style.opacity=v?'0.35':'1';v=1-v;},900);
+
+let currentTask=null;
+let viewMode='overview';
+let focusPersonId=null;
+let selGuardData=null;
+let resolvePick=null;
+let previewTaskId=null;
+let leafletMap=null;
+let markerLayers={tasks:null,people:null,guards:null,route:null,search:null};
+const layers={people:true,env:true,tasks:true,search:true};
+const MAP={w:960,h:600};
+const PX_PER_M=72/200;
+// 银滩浴场岸线基准点；抽象坐标 y=156 对应岸线，y 增大指向海面。
+const BEACH={center:[21.400495,109.154491],zoom:17};
+
+const zoneEnv={
+  'A-1':{depth:'0.3–0.6m',hs:'0.6m',wind:'SW 3.8m/s',tide:'+0.4m',rip:'弱',note:'西段近岸浅水，碎浪带内'},
+  'B-2':{depth:'0.5–1.0m',hs:'0.8m',wind:'SW 4.2m/s',tide:'+0.4m',rip:'弱',note:'中段浅水带，适合儿童活动区'},
+  'C-4':{depth:'1.5–2.2m',hs:'0.9m',wind:'SW 4.2m/s',tide:'+0.4m',rip:'中',note:'中水区，接近建议泳界 2m'},
+  'D-1':{depth:'2.0–3.5m',hs:'1.0m',wind:'SW 4.5m/s',tide:'+0.4m',rip:'中',note:'东段中深水，需重点巡逻'},
+  'D':{depth:'3.0–5.0m',hs:'1.0m',wind:'SW 4.5m/s',tide:'+0.4m',rip:'强',note:'深水区，离岸流 C3 活跃'},
+  '全域':{depth:'—',hs:'0.8m',wind:'SW 4.2m/s',tide:'+0.4m',rip:'C–D 中等',note:'银滩开放水域综合态势'},
+};
+
+const callCase={
+  title:'家长报案 · 男孩失踪',age:6,desc:'红色泳裤 · 黄色游泳圈',
+  zone:'B-2',cx:455,cy:235,lastSeen:'14:20 浅水区中段',phone:'138 0779 2234',
+  station:'S-03 东段救援站',status:'待接听 · 尚未建任务',
+};
+
+const guards={
+  'LG-01':{cx:678,cy:348,name:'李明',status:'busy',task:'T-005',radio:'CH-1',device:'电台 #01',phone:'0779-77101',cap:'深水救援',asset:'冲锋艇 + 急救包'},
+  'LG-02':{cx:224,cy:232,name:'陈志远',status:'busy',task:'T-003',radio:'CH-2',device:'电台 #02',phone:'0779-77102',cap:'水上救援',asset:'救生板 + AED'},
+  'LG-03':{cx:468,cy:198,name:'黄晓明',status:'patrol',radio:'CH-3',device:'电台 #03',phone:'0779-77103',cap:'儿童搜寻',asset:'救生浮标 + 对讲机'},
+  'LG-04':{cx:696,cy:178,name:'张磊',status:'free',radio:'CH-4',device:'电台 #04',phone:'0779-77104',cap:'岸巡救援',asset:'救生浮标 + 急救包'},
+  'LG-05':{cx:342,cy:188,name:'王芳',status:'free',radio:'CH-5',device:'电台 #05',phone:'0779-77105',cap:'急救处置',asset:'AED + 氧气包'},
+};
+
+let commActiveGuard=null;
+let callState='idle';
+let callOnHold=false;
+let callSeconds=0;
+let callTimerIv=null;
+const commLog=[
+  {time:'14:35',gid:'LG-02',dir:'out',type:'msg',text:'T-003 心率异常，请前往 C-4'},
+  {time:'14:35',gid:'LG-02',dir:'in',type:'msg',text:'收到，已出发'},
+  {time:'14:28',gid:'LG-01',dir:'out',type:'call',text:'通话 1m12s · T-005 越界'},
+];
+
+const people={
+  'A-1102':{cx:108,cy:208,label:'游客',child:false,risk:'normal'},
+  'A-1108':{cx:192,cy:198,label:'游客',child:false,risk:'normal'},
+  'A-2213':{cx:468,cy:218,label:'儿童 7岁',child:true,risk:'alert',task:'T-004'},
+  'A-2198':{cx:262,cy:228,label:'儿童 5岁',child:true,risk:'watch'},
+  'A-2204':{cx:335,cy:215,label:'儿童 6岁',child:true,risk:'watch'},
+  'A-3341':{cx:310,cy:272,label:'女性 ~34岁',child:false,risk:'emergency',task:'T-003'},
+  'A-1188':{cx:678,cy:348,label:'男性 ~22岁',child:false,risk:'emergency',task:'T-005'},
+  'A-3312':{cx:752,cy:296,label:'男性 ~28岁',child:false,risk:'watch',task:'T-006'},
+};
+
+function pxToM(px){return Math.round(px/PX_PER_M);}
+function distM(x1,y1,x2,y2){return pxToM(Math.hypot(x2-x1,y2-y1));}
+function etaSec(dist,guardStatus){
+  const speed=guardStatus==='busy'?1.8:2.6;
+  return Math.max(12,Math.round(dist/speed));
+}
+function fmtEta(sec){return sec>=60?`~${Math.ceil(sec/60)} min`:`~${sec}s`;}
+
+function findNearestGuard(tx,ty,preferId){
+  if(preferId&&guards[preferId])return preferId;
+  let best=null,bd=Infinity;
+  Object.entries(guards).forEach(([id,g])=>{
+    if(g.status==='busy'&&!preferId)return;
+    const d=Math.hypot(g.cx-tx,g.cy-ty);
+    if(d<bd){bd=d;best=id;}
+  });
+  return best||'LG-02';
+}
+
+function getDispatchInfo(tx,ty,assignedGuard){
+  const gid=findNearestGuard(tx,ty,assignedGuard);
+  const g=guards[gid];
+  const dm=distM(g.cx,g.cy,tx,ty);
+  const eta=etaSec(dm,g.status);
+  return{gid,name:g.name,dist:dm,eta,etaStr:fmtEta(eta),status:g.status};
+}
+
+function xyToLatLng(cx,cy){
+  const mx=(cx-480)*PX_PER_M;
+  const my=(cy-156)*PX_PER_M;
+  return[BEACH.center[0]-my*0.000009,BEACH.center[1]+mx*0.000009];
+}
+function getTaskZone(t){
+  return(t.meta.match(/[A-E]-?\d?/)||['全域'])[0];
+}
+function updateZoneHud(zoneKey,extra){
+  const z=zoneEnv[zoneKey]||zoneEnv['全域'];
+  document.getElementById('hudZone').textContent=zoneKey+' · 银滩';
+  document.getElementById('hudHs').textContent=z.hs;
+  document.getElementById('hudWind').textContent=z.wind;
+  document.getElementById('hudTide').textContent=z.tide+(z.tide.includes('↑')?'':' ↑');
+  document.getElementById('hudDepth').textContent=extra?.depth||z.depth;
+  const ripEl=document.getElementById('hudRip');
+  ripEl.textContent=z.rip;
+  ripEl.className='tag '+(z.rip.includes('强')?'warn':z.rip.includes('中')?'warn':'ok');
+}
+
+function initLeafletMap(){
+  leafletMap=L.map('realMap',{zoomControl:false,attributionControl:false}).setView(BEACH.center,BEACH.zoom);
+  const tiles=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+    maxZoom:19,opacity:0.92,
+  }).addTo(leafletMap);
+  let tileErrors=0;
+  tiles.on('tileerror',()=>{
+    tileErrors++;
+    if(tileErrors>=3)document.getElementById('mapDegraded').classList.add('show');
+  });
+  tiles.on('load',()=>{tileErrors=0;document.getElementById('mapDegraded').classList.remove('show');});
+  L.control.attribution({position:'bottomleft',prefix:''}).addTo(leafletMap);
+  markerLayers.tasks=L.layerGroup().addTo(leafletMap);
+  markerLayers.people=L.layerGroup().addTo(leafletMap);
+  markerLayers.guards=L.layerGroup().addTo(leafletMap);
+  markerLayers.route=L.layerGroup().addTo(leafletMap);
+  markerLayers.search=L.layerGroup().addTo(leafletMap);
+}
+
+function makePin(label,sub,cls){
+  const html=`<div class="pin-wrap ${cls}"><div class="pin-tag">${label}${sub?`<sub>${sub}</sub>`:''}</div><div class="pin-dot"></div></div>`;
+  return L.divIcon({className:'leaflet-pin-label',html,iconSize:[0,0],iconAnchor:[60,40]});
+}
+
+function renderLeafletMarkers(highlightId){
+  if(!leafletMap)return;
+  markerLayers.tasks.clearLayers();
+  markerLayers.people.clearLayers();
+  markerLayers.guards.clearLayers();
+  if(layers.tasks){
+    Object.entries(tasks).forEach(([id,t])=>{
+      const ll=xyToLatLng(t.cx,t.cy);
+      const riskCls=t.risk==='emergency'?'emg':t.risk==='alert'?'alert':'watch';
+      const short=(t.name.split('·')[0]||t.name).trim();
+      const m=L.marker(ll,{icon:makePin(id,short,riskCls+(highlightId===id?' selected':'')),zIndexOffset:highlightId===id?1000:400});
+      m.on('click',()=>previewOnMap(id));
+      m.addTo(markerLayers.tasks);
+    });
+  }
+  if(layers.people){
+    Object.entries(people).forEach(([id,p])=>{
+      if(p.task&&!layers.tasks)return;
+      const ll=xyToLatLng(p.cx,p.cy);
+      const riskCls=p.risk==='emergency'?'emg':p.risk==='alert'?'alert':'watch';
+      const quiet=focusPersonId===id?' selected':' quiet';
+      const m=L.marker(ll,{icon:makePin(id,p.label,riskCls+quiet),zIndexOffset:focusPersonId===id?900:300});
+      if(p.task)m.on('click',()=>previewOnMap(p.task));
+      m.addTo(markerLayers.people);
+    });
+  }
+  if(layers.people){
+    Object.entries(guards).forEach(([id,g])=>{
+      const ll=xyToLatLng(g.cx,g.cy);
+      const st=g.status==='busy'?'执行中':g.status==='patrol'?'巡逻':'空闲';
+      const m=L.marker(ll,{icon:makePin(g.name,id+` · ${st}`,`guard quiet ${g.status==='busy'?'busy':''}`),zIndexOffset:200});
+      m.on('click',()=>openComm(id,'call'));
+      m.addTo(markerLayers.guards);
+    });
+  }
+}
+function renderPeople(){renderLeafletMarkers(currentTask||previewTaskId);}
+function renderTaskMarkers(){renderLeafletMarkers(currentTask||previewTaskId);}
+function renderRouteOverlay(t,disp){renderRouteLeaflet(t,disp);}
+function renderSearchOverlays(id){renderSearchLeaflet(id);}
+
+function renderRouteLeaflet(t,disp){
+  markerLayers.route.clearLayers();
+  if(!t||!disp||viewMode!=='detail')return;
+  const gr=guards[disp.gid];
+  const ll1=xyToLatLng(gr.cx,gr.cy),ll2=xyToLatLng(t.cx,t.cy);
+  L.polyline([ll1,ll2],{color:'#fff',weight:2,dashArray:'6 6',opacity:0.7}).addTo(markerLayers.route);
+}
+
+function renderSearchLeaflet(id){
+  markerLayers.search.clearLayers();
+  const t=tasks[id];
+  if(!t||!layers.search)return;
+  const ll=xyToLatLng(t.cx,t.cy);
+  if(t.search){
+    L.circle(ll,{radius:t.search.r1*2.5,color:'#F79F47',weight:1.5,fillOpacity:0.05,dashArray:'4 4'}).addTo(markerLayers.search);
+    L.circle(ll,{radius:t.search.r2*2.5,color:'#F79F47',weight:1,fillOpacity:0.03,dashArray:'6 4'}).addTo(markerLayers.search);
+  }
+  if(t.trajectory){
+    const pts=t.trajectory.match(/[\d.]+/g);
+    if(pts&&pts.length>=4){
+      const latlngs=[];
+      for(let i=0;i<pts.length-1;i+=2)latlngs.push(xyToLatLng(+pts[i],+pts[i+1]));
+      L.polyline(latlngs,{color:'#938FDC',weight:2,dashArray:'4 3'}).addTo(markerLayers.search);
+    }
+  }
+}
+
+function focusMap(cx,cy,zoom=17){
+  if(leafletMap)leafletMap.setView(xyToLatLng(cx,cy),zoom,{animate:true});
+}
+
+function resetMapView(){
+  if(leafletMap)leafletMap.setView(BEACH.center,BEACH.zoom,{animate:true});
+}
+
+function getGuardsNear(t){
+  return Object.entries(guards).map(([id,g])=>{
+    const dm=distM(g.cx,g.cy,t.cx,t.cy);
+    return{id,name:g.name,dm,eta:fmtEta(etaSec(dm,g.status)),busy:g.status==='busy',status:g.status};
+  }).sort((a,b)=>a.dm-b.dm).slice(0,3);
+}
+
+function guardCommActionsHtml(gid){
+  return`<span class="comm-btns">
+    <button class="comm-btn call" onclick="event.stopPropagation();openComm('${gid}','call')" title="通话"><span class="material-symbols-outlined sm">call</span></button>
+    <button class="comm-btn msg" onclick="event.stopPropagation();openComm('${gid}','msg')" title="留言"><span class="material-symbols-outlined sm">chat</span></button>
+  </span>`;
+}
+
+function guardStatusLabel(g){
+  if(g.status==='busy')return'执行中';
+  if(g.status==='patrol')return'巡逻';
+  return'空闲';
+}
+
+function renderCommGuardList(){
+  const el=document.getElementById('commGuardList');if(!el)return;
+  el.innerHTML=Object.entries(guards).map(([id,g])=>{
+    const st=guardStatusLabel(g);
+    const extra=g.status==='busy'&&g.task?` · ${g.task}`:'';
+    return`<div class="comm-guard-row">
+      <div class="comm-gname"><b>${g.name}</b> ${id}<div class="comm-gst">${st}${extra} · ${g.radio}</div></div>
+      ${guardCommActionsHtml(id)}
+    </div>`;
+  }).join('');
+}
+
+function renderCommRecent(gid){
+  const el=document.getElementById('commRecent');if(!el)return;
+  const items=commLog.filter(c=>!gid||c.gid===gid).slice(-4).reverse();
+  el.innerHTML=items.length?items.map(c=>{
+    const g=guards[c.gid];
+    const who=g?g.name:c.gid;
+    const cls=c.dir==='in'?'in':'out';
+    const prefix=c.dir==='in'?`${who}：`:`调度 → ${who}：`;
+    const body=c.type==='call'?c.text:c.text;
+    return`<div class="${cls}">${c.time} ${prefix}${body}</div>`;
+  }).join(''):'<div style="color:var(--tx3)">暂无通联记录</div>';
+}
+
+function openComm(gid,tab){
+  const g=guards[gid];if(!g)return;
+  closeMapPanels('comm');
+  endGuardCall(false);
+  commActiveGuard=gid;
+  callOnHold=false;
+  document.getElementById('commMsgStatus').className='cp-msg-status';
+  document.getElementById('commMsgStatus').textContent='';
+  document.getElementById('commMsgText').value='';
+  document.getElementById('commPop').classList.add('show');
+  document.getElementById('commTarget').innerHTML=`<b>${g.name} · ${gid}</b><br>${g.device} · ${g.radio} · ${g.phone} · ${guardStatusLabel(g)}${g.task?' · '+g.task:''}`;
+  switchCommTab(tab||'call');
+  renderCommRecent(gid);
+  resetCallUI(g);
+}
+
+function closeComm(){
+  endGuardCall(false);
+  callOnHold=false;
+  document.getElementById('commPop').classList.remove('show');
+  document.getElementById('commInterrupt').classList.remove('show');
+  document.getElementById('commBackCall').style.display='none';
+  commActiveGuard=null;
+}
+
+function updateCommFoot(){
+  const onMsg=document.getElementById('commMsgView').style.display!=='none';
+  const showBack=onMsg&&(callState==='connected'||callState==='ringing'||callOnHold);
+  document.getElementById('commBackCall').style.display=showBack?'':'none';
+  document.getElementById('commInterrupt').classList.toggle('show',onMsg&&(callState==='connected'||callOnHold));
+}
+
+function switchCommTab(tab){
+  if(tab==='msg'&&(callState==='ringing'||callState==='connected'))holdCallForMsg();
+  if(tab==='call'&&callOnHold)resumeHeldCall();
+  document.getElementById('commTabCall').classList.toggle('on',tab==='call');
+  document.getElementById('commTabMsg').classList.toggle('on',tab==='msg');
+  document.getElementById('commCallView').style.display=tab==='call'?'':'none';
+  document.getElementById('commMsgView').style.display=tab==='msg'?'':'none';
+  updateCommFoot();
+}
+
+function holdCallForMsg(){
+  if(callState==='ringing'){
+    clearTimeout(window._callRingTO);
+    callState='idle';
+    callOnHold=false;
+    document.getElementById('commStatus').textContent='已取消呼叫 · 可发送插播留言';
+    document.getElementById('commStatus').className='cp-status';
+    document.getElementById('commCallBtn').textContent='发起通话';
+    document.getElementById('commCallBtn').className='cp-btn call';
+    document.getElementById('commTimer').textContent='';
+    return;
+  }
+  if(callState==='connected'){
+    if(callTimerIv){clearInterval(callTimerIv);callTimerIv=null;}
+    callOnHold=true;
+    document.getElementById('commStatus').textContent='通话暂挂 · 可插播留言';
+    document.getElementById('commStatus').className='cp-status ringing';
+  }
+}
+
+function resumeHeldCall(){
+  if(!callOnHold||callState!=='connected')return;
+  callOnHold=false;
+  document.getElementById('commStatus').textContent='通话中 · '+guards[commActiveGuard].radio;
+  document.getElementById('commStatus').className='cp-status connected';
+  if(!callTimerIv){
+    callTimerIv=setInterval(()=>{
+      callSeconds++;
+      const m=String(Math.floor(callSeconds/60)).padStart(2,'0');
+      const s=String(callSeconds%60).padStart(2,'0');
+      document.getElementById('commTimer').textContent=m+':'+s;
+    },1000);
+  }
+  updateCommFoot();
+}
+
+function resetCallUI(g){
+  const st=document.getElementById('commStatus');
+  const btn=document.getElementById('commCallBtn');
+  if(g&&g.status==='busy'){
+    st.textContent='当前执行其他任务，建议留言或等待回拨';
+    st.className='cp-status';
+    btn.textContent='尝试呼叫（可能占线）';
+    btn.className='cp-btn call';
+    btn.onclick=()=>toggleGuardCall(true);
+  }else{
+    st.textContent='点击下方按钮发起通话';
+    st.className='cp-status';
+    btn.textContent='发起通话';
+    btn.className='cp-btn call';
+    btn.onclick=()=>toggleGuardCall(false);
+  }
+  document.getElementById('commTimer').textContent='';
+}
+
+function toggleGuardCall(force){
+  if(callState==='connected'||callState==='ringing'){endGuardCall(true);updateCommFoot();return;}
+  const g=guards[commActiveGuard];if(!g)return;
+  if(g.status==='busy'&&!force){
+    switchCommTab('msg');
+    fillCommMsg(`请 ${g.name} 结束当前任务后回电调度中心`);
+    showCommMsgStatus('对方忙线 · 已切换至留言',false);
+    return;
+  }
+  callState='ringing';
+  callSeconds=0;
+  const st=document.getElementById('commStatus');
+  st.textContent=g.status==='busy'?'占线呼叫中…':'正在呼叫 '+g.name+'…';
+  st.className='cp-status ringing';
+  document.getElementById('commCallBtn').textContent='取消';
+  document.getElementById('commCallBtn').className='cp-btn call end';
+  document.getElementById('commTimer').textContent='';
+  clearTimeout(window._callRingTO);
+  updateCommFoot();
+  window._callRingTO=setTimeout(()=>{
+    if(callState!=='ringing')return;
+    if(g.status==='busy'&&force){
+      callState='idle';
+      st.textContent='占线未接听 · 请留言或稍后再拨';
+      st.className='cp-status';
+      document.getElementById('commCallBtn').textContent='发起通话';
+      document.getElementById('commCallBtn').className='cp-btn call';
+      return;
+    }
+    callState='connected';
+    st.textContent='通话中 · '+g.radio;
+    st.className='cp-status connected';
+    document.getElementById('commCallBtn').textContent='挂断';
+    updateCommFoot();
+    callTimerIv=setInterval(()=>{
+      callSeconds++;
+      const m=String(Math.floor(callSeconds/60)).padStart(2,'0');
+      const s=String(callSeconds%60).padStart(2,'0');
+      document.getElementById('commTimer').textContent=m+':'+s;
+    },1000);
+    if(currentTask){
+      setTimeout(()=>{
+        if(callState==='connected'){
+          const t=tasks[currentTask];
+          const reply={time:new Date().toTimeString().slice(0,5),gid:commActiveGuard,dir:'in',type:'msg',text:'收到，已确认指令'};
+          commLog.push(reply);
+          renderCommRecent(commActiveGuard);
+        }
+      },3500);
+    }
+  },g.status==='busy'?2200:1600);
+}
+
+function endGuardCall(log){
+  clearTimeout(window._callRingTO);
+  if(callTimerIv){clearInterval(callTimerIv);callTimerIv=null;}
+  if(log&&callState==='connected'&&commActiveGuard){
+    const g=guards[commActiveGuard];
+    const dur=callSeconds>=60?`${Math.floor(callSeconds/60)}m${callSeconds%60}s`:`${callSeconds}s`;
+    commLog.push({time:new Date().toTimeString().slice(0,5),gid:commActiveGuard,dir:'out',type:'call',text:`通话 ${dur}`});
+    document.getElementById('lc-note').textContent=`与 ${g.name} 通话结束 · ${dur}`;
+    renderCommRecent(commActiveGuard);
+  }
+  callState='idle';
+  callOnHold=false;
+  callSeconds=0;
+  if(commActiveGuard&&document.getElementById('commPop').classList.contains('show')){
+    const g=guards[commActiveGuard];
+    if(g){
+      const st=document.getElementById('commStatus');
+      const btn=document.getElementById('commCallBtn');
+      st.textContent='点击下方按钮发起通话';
+      st.className='cp-status';
+      btn.textContent=g.status==='busy'?'尝试呼叫（可能占线）':'发起通话';
+      btn.className='cp-btn call';
+      btn.onclick=()=>toggleGuardCall(g.status==='busy');
+      document.getElementById('commTimer').textContent='';
+    }
+    updateCommFoot();
+  }
+}
+
+function fillCommMsg(text){
+  document.getElementById('commMsgText').value=text;
+}
+
+function showCommMsgStatus(text,isErr){
+  const el=document.getElementById('commMsgStatus');
+  el.textContent=text;
+  el.className='cp-msg-status show'+(isErr?' err':'');
+}
+
+function sendGuardMessage(){
+  const g=guards[commActiveGuard];if(!g)return;
+  const text=document.getElementById('commMsgText').value.trim();
+  if(!text){showCommMsgStatus('请先输入留言内容',true);return;}
+  const time=new Date().toTimeString().slice(0,5);
+  const wasHold=callOnHold;
+  commLog.push({time,gid:commActiveGuard,dir:'out',type:'msg',text});
+  document.getElementById('commMsgText').value='';
+  document.getElementById('lc-note').textContent=`留言已发送至 ${g.name} · ${g.device}`;
+  renderCommRecent(commActiveGuard);
+  showCommMsgStatus(wasHold||callState==='connected'
+    ?'插播留言已推送 · 可返回通话或关闭通联'
+    :'留言已推送 · 可继续发送或关闭通联',false);
+  setTimeout(()=>{
+    if(!commActiveGuard)return;
+    commLog.push({time:new Date().toTimeString().slice(0,5),gid:commActiveGuard,dir:'in',type:'msg',text:'收到，已读'});
+    renderCommRecent(commActiveGuard);
+  },1800);
+  if(currentTask&&tasks[currentTask]&&tasks[currentTask].assignedGuard===commActiveGuard){
+    tasks[currentTask].note=`${g.name} 已收留言 · ${text.slice(0,18)}${text.length>18?'…':''}`;
+    document.getElementById('lc-note').textContent=tasks[currentTask].note;
+  }
+  updateCommFoot();
+}
+
+function renderRiskBriefHtml(t,id){
+  const zone=getTaskZone(t);
+  const z=zoneEnv[zone]||zoneEnv['全域'];
+  const signals=t.signals||[];
+  const steps=t.verifySteps||['对照地图标注位置','阅读系统触发依据'];
+  const watchHtml=t.status==='Detected'?renderWatchProbeHtml(t,id):'';
+  return`<div class="risk-brief">
+    <div class="rb-head">
+      <span class="rb-title">风险研判 · 确认前请对照</span>
+      <span class="rb-score" style="color:${t.ccolor||'var(--nv)'}">${t.cl||t.rl||'—'}</span>
+    </div>
+    ${t.chartNote?`<div class="rb-note">${t.chartNote}</div>`:''}
+    ${t.detectedAt?`<div style="font-size:var(--text-2xs);color:var(--tx3);margin-bottom:6px">检测 ${t.detectedAt}${t.lastSignalAt?' · 最近信号 '+t.lastSignalAt:''} · 来源 ${t.source}</div>`:''}
+    ${watchHtml}
+    ${signals.length?`<div class="rb-signals">${signals.map(s=>`<div class="rb-sig ${s.status||'neutral'}"><span>${s.label}</span><b>${s.value}</b></div>`).join('')}</div>`:''}
+    <div class="rb-reasons">
+      <div class="rb-sub">系统为何提示待确认</div>
+      ${(t.reasons||[]).map(r=>`<div class="rb-reason"><span class="material-symbols-outlined sm">warning</span><span>${r}</span></div>`).join('')}
+    </div>
+    <div class="rb-env">
+      <div class="rb-sub">事发海域 · ${zone}</div>
+      <div class="rb-env-row">估计水深 ${t.depth||'—'} · 距岸 ${t.distShore||'—'} · 浪 ${z.hs} · 离岸流 ${z.rip}</div>
+      <div class="rb-env-row" style="margin-top:2px;opacity:0.85">${z.note}</div>
+    </div>
+    ${steps.length?`<div class="rb-check">
+      <div class="rb-sub">推荐处置顺序</div>
+      ${steps.map((s,i)=>`<div class="rb-check-item" style="cursor:default"><span style="color:var(--nv);font-weight:700;margin-right:4px">${i+1}.</span> ${s}</div>`).join('')}
+    </div>`:''}
+  </div>`;
+}
+
+function getWatchTarget(t){
+  if(t.probeBand)return t.probeBand;
+  if(t.personId&&people[t.personId])return{id:t.personId,match:100,label:people[t.personId].label,battery:'—'};
+  if(t.candidates?.length){
+    const c=t.candidates[0];
+    return{id:c.id,match:c.pct,label:people[c.id]?.label||'候选手环',battery:'—'};
+  }
+  return null;
+}
+
+const WATCH_PROBE_MSG='银滩救援中心：检测到您在水中静止较久。是否需要帮助？请在手表选择【需要帮助】或【我没事】。';
+
+function renderWatchProbeHtml(t,id){
+  const band=getWatchTarget(t);
+  if(!band)return'';
+  const wp=t.watchProbe;
+  let statusHtml='';
+  let btnHtml='';
+  if(!wp||wp.status==='idle'){
+    statusHtml='<div class="wp-status pending" style="background:var(--bg1);color:var(--tx2)">尚未发送手表确认</div>';
+    btnHtml=`<button class="wp-btn send" onclick="sendWatchProbe('${id}')"><span class="material-symbols-outlined sm">watch_wake</span> 发送手表确认</button>`;
+  }else if(wp.status==='pending'){
+    statusHtml=`<div class="wp-status pending">已发送 · 等待用户回应… · ${wp.sentAt}</div>`;
+    btnHtml=`<button class="wp-btn send" disabled>等待手表回应中</button>
+      <button class="wp-btn send" style="background:var(--bg2);color:var(--tx2)" onclick="sendWatchProbe('${id}')">重新发送</button>`;
+  }else if(wp.status==='help'){
+    statusHtml=`<div class="wp-status help">${band.id} 回复：需要帮助 · ${wp.repliedAt||''}</div>`;
+    btnHtml=`<button class="wp-btn send" onclick="confirmRiskFor('${id}')">用户已求助 · 确认风险并派遣</button>`;
+  }else if(wp.status==='ok'){
+    statusHtml=`<div class="wp-status ok">${band.id} 回复：我没事 · ${wp.repliedAt||''}</div>`;
+    btnHtml=`<button class="wp-btn send" style="background:var(--gn);color:#fff" onclick="openResolveFor('${id}')">用户确认安全 · 标记误报关闭</button>`;
+  }else if(wp.status==='timeout'){
+    statusHtml=`<div class="wp-status timeout">${band.id} 超时无应答 · 可重发或升级人工复核</div>`;
+    btnHtml=`<button class="wp-btn send" onclick="sendWatchProbe('${id}')">再次发送确认</button>
+      <button class="wp-btn send" style="background:var(--og);color:#fff" onclick="confirmRiskFor('${id}')">无应答 · 按风险确认</button>`;
+  }
+  return`<div class="wp-panel">
+    <div class="wp-head"><span class="material-symbols-outlined sm">watch_wake</span><span class="wp-title">手环远程确认 · 优先于人工复核</span></div>
+    <div class="wp-band">目标手环 <b>${band.id}</b> · ${band.label} · 融合 ${band.match}%${band.battery?' · 电量 '+band.battery:''}</div>
+    <div class="wp-msg">${WATCH_PROBE_MSG}</div>
+    ${statusHtml}
+    ${btnHtml}
+    <div class="wp-demo"><span class="wp-demo-t">演示 · 模拟手表端回应</span>
+      <button onclick="handleWatchProbeReply('${id}','help')">用户：需要帮助</button>
+      <button onclick="handleWatchProbeReply('${id}','ok')">用户：我没事</button>
+      <button onclick="handleWatchProbeReply('${id}','timeout')">超时无应答</button>
+    </div>
+  </div>`;
+}
+
+function refreshWatchProbeUI(id){
+  if(previewTaskId===id||currentTask===id){
+    if(viewMode==='overview'&&previewTaskId===id){
+      showRiskBriefForTask(id);
+      renderOverviewPreview(id);
+      if(document.getElementById('mapCallout').classList.contains('show'))showMapCalloutForTask(id);
+    }else if(currentTask===id){
+      const t=tasks[id];
+      const disp=getDispatchInfo(t.cx,t.cy,t.assignedGuard);
+      updateActionGuide(t,disp,id);
+      document.getElementById('tcard').innerHTML=renderRiskBriefHtml(t,id);
+    }
+  }
+}
+
+function sendWatchProbe(taskId){
+  const id=taskId||currentTask||previewTaskId;
+  const t=tasks[id];if(!t)return;
+  const band=getWatchTarget(t);
+  if(!band){showInfoToast('未找到可联系的手环，请改用手动确认。');return;}
+  clearTimeout(t._probeTO);
+  const time=new Date().toTimeString().slice(0,8);
+  t.watchProbe={status:'pending',sentAt:time,bandId:band.id,message:WATCH_PROBE_MSG};
+  t.note=`${id} · 已向 ${band.id} 发送手表确认 · 等待回应`;
+  document.getElementById('lc-note').textContent=t.note;
+  showInfoToast(`<b>${band.id}</b> 手表已振动并弹出确认界面`);
+  refreshWatchProbeUI(id);
+  t._probeTO=setTimeout(()=>{
+    if(t.watchProbe?.status==='pending')handleWatchProbeReply(id,'timeout');
+  },12000);
+}
+
+function handleWatchProbeReply(taskId,reply){
+  const t=tasks[taskId];if(!t)return;
+  clearTimeout(t._probeTO);
+  const band=getWatchTarget(t);
+  const time=new Date().toTimeString().slice(0,8);
+  if(!t.watchProbe)t.watchProbe={bandId:band?.id,sentAt:time,message:WATCH_PROBE_MSG};
+  t.watchProbe.repliedAt=time;
+  if(reply==='help'){
+    t.watchProbe.status='help';
+    t.note=`${taskId} · ${band.id} 回复需要帮助 · 请确认风险并派遣`;
+    t.risk='alert';
+    t.rl='Alert';
+    t.crisis=58;
+    t.cl='Alert · 58';
+    t.ccolor='var(--og)';
+    showInfoToast(`<b>${band.id}</b> 用户按下了「需要帮助」`);
+  }else if(reply==='ok'){
+    t.watchProbe.status='ok';
+    t.note=`${taskId} · ${band.id} 回复我没事 · 建议标记误报`;
+    showInfoToast(`<b>${band.id}</b> 用户确认安全，可关闭任务`);
+  }else{
+    t.watchProbe.status='timeout';
+    t.note=`${taskId} · ${band.id} 超时无应答 · 可重发或升级`;
+    showInfoToast(`<b>${band.id}</b> 45s 内无回应`);
+  }
+  document.getElementById('lc-note').textContent=t.note;
+  refreshWatchProbeUI(taskId);
+  renderEventBadges();
+  updateRescueGlobal();
+}
+
+function sendWatchProbeFor(id){
+  if(viewMode==='overview')previewOnMap(id);
+  sendWatchProbe(id);
+}
+
+function showRiskBriefForTask(id){
+  const t=tasks[id];
+  const el=document.getElementById('ovRiskBrief');
+  if(!t||t.status!=='Detected'||viewMode!=='overview'){
+    if(el)el.style.display='none';
+    return;
+  }
+  el.style.display='';
+  el.innerHTML=renderRiskBriefHtml(t,id);
+}
+
+function closeMapCallout(){
+  document.getElementById('mapCallout').classList.remove('show');
+  document.querySelector('.map-attrib')?.classList.add('no-callout');
+}
+function closeMapPanels(except){
+  if(except!=='callout')closeMapCallout();
+  if(except!=='archive')closeArchive();
+  if(except!=='dispatch')closeDispatch();
+  if(except!=='resolve')closeResolve();
+  if(except!=='comm')closeComm();
+}
+
+function showMapCalloutForTask(id){
+  const t=tasks[id];if(!t)return;
+  previewTaskId=id;
+  const zone=getTaskZone(t);
+  updateZoneHud(zone,{depth:t.depth});
+  const disp=getDispatchInfo(t.cx,t.cy,t.assignedGuard);
+  const guardsNear=getGuardsNear(t);
+  const phase=deriveRescuePhase(t);
+  document.getElementById('mapCalloutBody').innerHTML=`
+    <div class="mc-head"><span class="mc-id">${id}</span><span class="mc-badge ${phase}">${RESCUE[phase].label}</span></div>
+    <div class="mc-person">${t.name}</div>
+    <div class="mc-grid">
+      <div class="mc-cell">网格分区<span>${zone}</span></div>
+      <div class="mc-cell">任务状态<span>${STATUS_CN[t.status]||t.status}</span></div>
+      <div class="mc-cell">估计水深<span>${t.depth||'—'}</span></div>
+      <div class="mc-cell">距岸<span>${t.distShore||'—'}</span></div>
+      ${t.confidence?`<div class="mc-cell">匹配置信<span>${t.confidence}%</span></div>`:''}
+      <div class="mc-cell">来源<span>${t.source}</span></div>
+    </div>
+    <div class="mc-sea"><div class="mc-sea-t">海域实况 · ${zone}</div>${(zoneEnv[zone]||zoneEnv['全域']).note} · 浪 ${(zoneEnv[zone]||zoneEnv['全域']).hs} · 离岸流 ${(zoneEnv[zone]||zoneEnv['全域']).rip}</div>
+    ${t.status==='Detected'?`<div class="mc-risk">${renderRiskBriefHtml(t,id)}</div>`:''}
+    <div class="mc-guards"><div class="mc-sea-t">救生员</div>
+      ${guardsNear.map(g=>`<div class="mc-guard-row"><span class="mc-guard-info"><b>${g.name} ${g.id}</b> · ${g.busy?'执行中':g.status==='patrol'?'巡逻':'空闲'} · ${g.dm}m · ${g.eta}</span>${guardCommActionsHtml(g.id)}</div>`).join('')}
+      ${t.assignedGuard?`<div class="mc-guard-row"><span class="mc-guard-info"><b>已派 ${t.assignedName}</b> · ${disp.dist}m · ${disp.etaStr}</span>${guardCommActionsHtml(t.assignedGuard)}</div>`:''}
+    </div>
+    <div class="mc-actions">
+      <button class="mc-btn gh" onclick="closeMapCallout()">关闭</button>
+      ${t.status==='Detected'
+        ?(getWatchTarget(t)&&(!t.watchProbe||t.watchProbe.status==='pending'||t.watchProbe.status==='idle'||!t.watchProbe)
+          ?`<button class="mc-btn prim" onclick="sendWatchProbeFor('${id}')">发送手表确认</button>`
+          :t.watchProbe?.status==='help'
+            ?`<button class="mc-btn prim" onclick="confirmRiskFor('${id}')">用户求助 · 确认风险</button>`
+            :t.watchProbe?.status==='ok'
+              ?`<button class="mc-btn prim" onclick="openResolveFor('${id}')">用户无事 · 关闭</button>`
+              :`<button class="mc-btn prim" onclick="sendWatchProbeFor('${id}')">再次手表确认</button>`)
+        :`<button class="mc-btn prim" onclick="enterTaskDetail('${id}')">进入处置 →</button>`}
+    </div>`;
+  document.getElementById('mapCallout').classList.add('show');
+  document.querySelector('.map-attrib')?.classList.remove('no-callout');
+  document.getElementById('chartCtx').className='chart-ctx';
+  closeDispatch();closeResolve();closeComm();closeArchive();
+  focusMap(t.cx,t.cy,17);
+  renderLeafletMarkers(id);
+  renderOverviewPreview(id);
+  showRiskBriefForTask(id);
+}
+
+function showMapCalloutForCall(){
+  previewTaskId=null;
+  updateZoneHud('B-2',{depth:'0.5–1.0m'});
+  const ll=xyToLatLng(callCase.cx,callCase.cy);
+  const guardsNear=getGuardsNear({cx:callCase.cx,cy:callCase.cy});
+  document.getElementById('mapCalloutBody').innerHTML=`
+    <div class="mc-head"><span class="mc-id">来电报案</span><span class="mc-badge pending">待确认</span></div>
+    <div class="mc-person">${callCase.title} · ${callCase.age}岁</div>
+    <div class="mc-grid">
+      <div class="mc-cell">最后目击<span>${callCase.lastSeen}</span></div>
+      <div class="mc-cell">特征<span>${callCase.desc}</span></div>
+      <div class="mc-cell">网格分区<span>${callCase.zone}</span></div>
+      <div class="mc-cell">家长位置<span>${callCase.station}</span></div>
+    </div>
+    <div class="mc-sea"><div class="mc-sea-t">海域实况 · B-2</div>${zoneEnv['B-2'].note} · 浪 ${zoneEnv['B-2'].hs}</div>
+    <div class="mc-guards"><div class="mc-sea-t">最近救生员</div>
+      ${guardsNear.map(g=>`<div class="mc-guard-row"><span class="mc-guard-info"><b>${g.name} ${g.id}</b> · ${g.dm}m · ${g.eta}</span>${guardCommActionsHtml(g.id)}</div>`).join('')}
+    </div>
+    <div class="mc-actions">
+      <button class="mc-btn gh" onclick="closeMapCallout()">关闭</button>
+      <button class="mc-btn prim" onclick="showCallPopup()">接听登记 →</button>
+    </div>`;
+  document.getElementById('mapCallout').classList.add('show');
+  document.querySelector('.map-attrib')?.classList.remove('no-callout');
+  closeDispatch();closeResolve();closeComm();closeArchive();
+  if(leafletMap)leafletMap.setView(ll,17,{animate:true});
+  document.getElementById('ovHint').textContent='已标注报案位置 · B-2 浅水区';
+  document.getElementById('ovPreview').innerHTML=`<div class="ov-preview"><b>男孩失踪 · 来电待接听</b><p>${callCase.age}岁 · ${callCase.zone} · ${callCase.lastSeen}</p><button class="ag-primary prim" onclick="showCallPopup()">接听并创建任务 →</button></div>`;
+}
+
+function previewOnMap(id){
+  if(viewMode==='detail'){enterTaskDetail(id);return;}
+  showMapCalloutForTask(id);
+}
+
+function renderOverviewPreview(id){
+  const t=tasks[id];if(!t)return;
+  const detected=t.status==='Detected';
+  const band=getWatchTarget(t);
+  const wp=t.watchProbe;
+  document.getElementById('ovHint').textContent=detected
+    ?'优先向手环发送确认消息，由用户自己在手表上回应，无需先派救生员目视。'
+    :'已在地图标注人员、海域与救生员信息';
+  showRiskBriefForTask(id);
+  let actionHtml='';
+  if(detected&&band){
+    if(wp?.status==='help'){
+      actionHtml=`<button class="ag-primary emg" style="margin-bottom:0" onclick="confirmRiskFor('${id}')">用户求助 · 确认风险</button>`;
+    }else if(wp?.status==='ok'){
+      actionHtml=`<button class="ag-primary prim" style="margin-bottom:0;background:var(--gn);color:#fff" onclick="openResolveFor('${id}')">用户无事 · 关闭任务</button>`;
+    }else if(wp?.status==='timeout'){
+      actionHtml=`<div class="ag-row">
+        <button class="ag-primary prim" style="margin-bottom:0" onclick="sendWatchProbeFor('${id}')">再次发送</button>
+        <button class="ag-primary emg" style="margin-bottom:0" onclick="confirmRiskFor('${id}')">无应答 · 确认</button>
+      </div>`;
+    }else if(wp?.status==='pending'){
+      actionHtml=`<button class="ag-primary gh" style="margin-bottom:0" disabled>等待 ${band.id} 回应…</button>
+        <button class="ag-primary gh" style="margin-top:6px;margin-bottom:0" onclick="sendWatchProbe('${id}')">重新发送</button>`;
+    }else{
+      actionHtml=`<button class="ag-primary prim" style="margin-bottom:0" onclick="sendWatchProbeFor('${id}')"><span class="material-symbols-outlined sm">watch_wake</span> 发送手表确认</button>
+        <div class="ag-row" style="margin-top:6px">
+          <button class="ag-primary gh" style="margin-bottom:0" onclick="openResolveFor('${id}')">标记误报</button>
+        </div>`;
+    }
+  }else if(detected){
+    actionHtml=`<div class="ag-row">
+      <button class="ag-primary emg" style="margin-bottom:0" onclick="confirmRiskFor('${id}')">确认风险</button>
+      <button class="ag-primary gh" style="margin-bottom:0" onclick="openResolveFor('${id}')">标记误报</button>
+    </div>`;
+  }else{
+    actionHtml=`<button class="ag-primary prim" onclick="enterTaskDetail('${id}')">进入处置 →</button>`;
+  }
+  document.getElementById('ovPreview').innerHTML=`<div class="ov-preview">
+    <b>${id} · ${(t.name.split('·')[0]||t.name).trim()}</b>
+    <p>${getTaskZone(t)} · ${STATUS_CN[t.status]} · ${RESCUE[deriveRescuePhase(t)].label}${t.requiredAsset?' · '+t.requiredAsset:''}</p>
+    ${actionHtml}
+  </div>`;
+}
+
+function enterOverview(){
+  viewMode='overview';
+  currentTask=null;
+  previewTaskId=null;
+  closeMapCallout();closeAlert();closeArchive();closeInfoToast();
+  document.getElementById('rightPanel').className='right overview-mode';
+  document.getElementById('sbar').className='sbar overview-mode';
+  document.getElementById('lc-note').textContent='银滩全域纵览 · 点击事件查看地图标注 · '+Object.values(tasks).filter(t=>deriveRescuePhase(t)==='active').length+' 起求救进行中';
+  document.getElementById('ovRescue').textContent=Object.values(tasks).filter(t=>deriveRescuePhase(t)==='active').length;
+  document.getElementById('ovTasks').textContent=Object.keys(tasks).length;
+  document.getElementById('ovRiskBrief').style.display='none';
+  document.getElementById('ovPreview').innerHTML='';
+  document.getElementById('mapwrap').classList.remove('focused','rescue-active','rescue-pending');
+  resetMapView();
+  updateZoneHud('全域');
+  markerLayers.route&&markerLayers.route.clearLayers();
+  markerLayers.search&&markerLayers.search.clearLayers();
+  renderLeafletMarkers(null);
+  document.querySelectorAll('.ev[data-task]').forEach(el=>{el.classList.remove('on','dim');});
+}
+
+function enterTaskDetail(id){
+  viewMode='detail';
+  currentTask=id;
+  closeMapCallout();
+  document.getElementById('rightPanel').className='right detail-mode';
+  document.getElementById('sbar').className='sbar';
+  selTask(id);
+}
+function exitToOverview(){enterOverview();}
+
+function handleTaskSwitch(id){
+  if(viewMode==='overview')previewOnMap(id);
+  else enterTaskDetail(id);
+}
+function selPerson(pid){
+  const p=people[pid];if(!p)return;
+  focusPersonId=pid;
+  if(p.task)handleTaskSwitch(p.task);
+}
+
+function updateChartCtxPerson(pid,p,disp){
+  closeMapCallout();
+  document.getElementById('chartCtx').className='chart-ctx show';
+  document.getElementById('chartCtx').innerHTML=`
+    <div class="cx-head"><span class="cx-id">${pid}</span><span class="cx-badge rbadge watch">${p.label}</span></div>
+    <div class="cx-grid">
+      <div class="cx-cell">最近救生员<span>${disp.name} ${disp.gid}</span></div>
+      <div class="cx-cell">直线距离<span>${disp.dist} m</span></div>
+      <div class="cx-cell">预计到达<span>${disp.etaStr}</span></div>
+      <div class="cx-cell">状态<span>${disp.status==='free'?'可派遣':'执行中'}</span></div>
+    </div>
+    <div class="cx-note">已定位手环 ${pid}，地图已聚焦该目标。</div>`;
+  renderRouteOverlay({cx:p.cx,cy:p.cy},disp);
+}
+
+function selCandidate(pid){
+  focusPersonId=pid;
+  document.querySelectorAll('.cand-item').forEach(el=>el.classList.toggle('on',el.dataset.pid===pid));
+  if(people[pid]?.task)handleTaskSwitch(people[pid].task);
+  renderPeople();
+}
+
+const STATUS_CN={'Detected':'待确认','Confirmed':'已确认','Dispatched':'派遣中','In progress':'处置中','Escalated':'已移交','Resolved':'已完成'};
+
+const eventFeed=[
+  {type:'call',rescue:'pending'},
+  {type:'primary',task:'T-003',rescue:'active'},
+  {type:'primary',task:'T-004',rescue:'active'},
+  {type:'sub',task:'T-004',msg:'手环 <b>A-2213</b> 信号匹配，置信度 92%。已关联 T-004，建议优先排查。',openCand:true},
+  {type:'primary',task:'T-005',rescue:'active'},
+  {type:'sub',task:'T-005',msg:'<b>S-03 救援站</b> 救生员上报溺水前兆，已合并至 T-005。'},
+  {type:'primary',task:'T-006',rescue:'pending'},
+  {type:'archive',rescue:'none',archiveId:'T-001'},
+];
+
+const archives={
+  'T-001':{
+    id:'T-001',title:'T-001 已解决 · 误报关闭',
+    body:'系统于 <b>A-1 浅水区</b> 检测到静止异常，派遣 <b>王芳 LG-05</b> 到场复核。现场确认游客正常休息，无求救需求。',
+    tags:['误报关闭','响应 4m12s','A-1 浅水区'],
+    timeline:'14:14 检测 → 14:16 确认 → 14:18 完成',
+  },
+};
+
+function showArchivePopup(id){
+  closeMapPanels('archive');
+  const data=archives[id||'T-001'];
+  if(!data)return;
+  document.getElementById('ar-title').textContent=data.title;
+  document.getElementById('ar-body').innerHTML=data.body;
+  document.getElementById('ar-meta').innerHTML=data.tags.map(t=>`<span class="ar-tag">${t}</span>`).join('');
+  document.getElementById('ar-timeline').textContent=data.timeline;
+  document.getElementById('archivePop').classList.add('show');
+  document.querySelector('.map-attrib')?.classList.remove('no-callout');
+}
+function closeArchive(){
+  document.getElementById('archivePop').classList.remove('show');
+  if(!document.getElementById('mapCallout').classList.contains('show'))
+    document.querySelector('.map-attrib')?.classList.add('no-callout');
+}
+
+function showCallPopup(){closeArchive();closeInfoToast();if(viewMode==='overview')showMapCalloutForCall();showAlert();}
+
+let toastTimer=null;
+function showInfoToast(html){
+  const t=document.getElementById('infoToast');
+  t.innerHTML=`<span class="it-close" onclick="closeInfoToast()">×</span>${html}`;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(closeInfoToast,6000);
+}
+function closeInfoToast(){document.getElementById('infoToast').classList.remove('show');clearTimeout(toastTimer);}
+
+function openSubEvent(idx){
+  const ev=eventFeed[idx];
+  if(!ev||ev.type!=='sub')return;
+  if(viewMode==='overview')previewOnMap(ev.task);
+  else if(currentTask!==ev.task)enterTaskDetail(ev.task);
+  showInfoToast(ev.msg);
+  if(ev.openCand){
+    const fold=document.getElementById('candFold');
+    fold.style.display='';
+    fold.open=true;
+  }
+}
+
+const RESCUE={
+  active:{cls:'active',label:'求救中',sub:'已进入求救阶段'},
+  pending:{cls:'pending',label:'待确认',sub:'尚未确认求救'},
+  none:{cls:'none',label:'无求救',sub:'非求救事件'},
+};
+
+function deriveRescuePhase(task){
+  if(!task)return'none';
+  if(task.rescuePhase)return task.rescuePhase;
+  if(task.status==='Resolved')return'none';
+  if(task.status==='Detected')return'pending';
+  if(['Confirmed','Dispatched','In progress'].includes(task.status)&&(task.risk==='emergency'||task.risk==='alert'))return'active';
+  if(task.risk==='watch')return'pending';
+  return'none';
+}
+
+function rescueBadgeHtml(phase,size=''){
+  const r=RESCUE[phase]||RESCUE.none;
+  const sz=size?` ${size}`:'';
+  return`<span class="rs-badge ${r.cls}${sz}"><span class="rs-dot"></span>${r.label}${size==='lg'?`<span class="rs-sub">· ${r.sub}</span>`:''}</span>`;
+}
+
+function updateRescueGlobal(){
+  const n=Object.values(tasks).filter(t=>deriveRescuePhase(t)==='active').length;
+  const el=document.getElementById('rescueGlobal');
+  if(n>0){
+    el.className='rescue-global active';
+    el.innerHTML=`<span class="rg-dot"></span><span>求救阶段 · ${n} 起进行中</span>`;
+  }else{
+    el.className='rescue-global calm';
+    el.innerHTML=`<span class="rg-dot"></span><span>常态监控 · 无活跃求救</span>`;
+  }
+}
+
+function renderEventBadges(){
+  document.querySelectorAll('.ev[data-task]').forEach(el=>{
+    const t=tasks[el.dataset.task];
+    if(!t)return;
+    const row=el.querySelector('.evr1');
+    if(!row)return;
+    row.querySelector('.rs-badge')?.remove();
+    row.insertAdjacentHTML('beforeend',rescueBadgeHtml(deriveRescuePhase(t)));
+  });
+}
+
+function applyRescueContext(phase){
+  const mw=document.getElementById('mapwrap');
+  mw.classList.remove('rescue-active','rescue-pending');
+  if(phase==='active')mw.classList.add('rescue-active');
+  else if(phase==='pending')mw.classList.add('rescue-pending');
+}
+
+function openEvent(idx){
+  const ev=eventFeed[idx];
+  if(!ev||ev.type!=='primary')return;
+  closeAlert();closeArchive();closeInfoToast();
+  document.querySelectorAll('.ev[data-task]').forEach(el=>{
+    const on=el.dataset.task===ev.task;
+    el.classList.toggle('on',on);
+    el.classList.toggle('dim',!on);
+  });
+  previewOnMap(ev.task);
+}
+
+const tasks={
+  'T-003':{
+    lc:2,note:'陈志远 LG-02 前往中 · ETA 45s',risk:'emergency',rl:'Emergency',status:'Dispatched',
+    av:'F',name:'未知女性 · A-3341',meta:'约34岁 · C-4 中水区',source:'系统自动预警',
+    personId:'A-3341',assignedGuard:'LG-02',assignedName:'陈志远',assignmentAck:true,
+    confidence:null,cx:310,cy:272,depth:'~2.1m',distShore:'~85m',drift:'→ SE 0.3 m/s',
+    chartNote:'已越过建议泳界（2m 等深线）。心率异常 + 静止，系统判定为 Emergency。',
+    reasons:['HR 148bpm，超出正常上限','进入中水区边界（2m 等深线外）','静止 3m24s 无移动','年龄权重：成人中等'],
+    crisis:72,cl:'Emergency · 72',cs:'3 紧急 · 4 预警',ccolor:'var(--og)',
+    requiredAsset:'AED',search:null,trajectory:null,candidates:null,reportArea:null
+  },
+  'T-004':{
+    lc:1,note:'已确认 · 匹配手环 A-2213 · 等待派遣',risk:'alert',rl:'Alert',status:'Confirmed',
+    av:'童',name:'失踪儿童 · A-2213',meta:'7岁 · B-2 浅水带',source:'家长报案 + 系统匹配',
+    personId:'A-2213',
+    confidence:92,cx:468,cy:218,depth:'~0.8m',distShore:'~35m',drift:'→ E 0.2 m/s',
+    chartNote:'位于碎浪带内，搜索圈已按风漂方向向东扩展。优先排查 A-2213。',
+    reasons:['家长报案：7岁男孩走失 16min','最后目击 B-2 浅水区中段','手环 A-2213 轨迹吻合','儿童年龄权重提升'],
+    crisis:58,cl:'Alert · 58',cs:'1 儿童失踪',ccolor:'var(--og)',
+    requiredAsset:'儿童搜寻',search:{r1:55,r2:95},trajectory:'M420,228 Q440,222 455,218 Q465,216 468,218',
+    reportArea:{cx:455,cy:212,rx:42,ry:18},
+    candidates:[{id:'A-2213',pct:92},{id:'A-2198',pct:74},{id:'A-2204',pct:61}]
+  },
+  'T-005':{
+    lc:3,note:'李明 LG-01 已到场 · 救援中',risk:'emergency',rl:'Emergency',status:'In progress',
+    av:'M',name:'未知男性 · A-1188',meta:'约22岁 · D 深水区',source:'系统越界预警',
+    personId:'A-1188',assignedGuard:'LG-01',assignedName:'李明',
+    confidence:null,cx:678,cy:348,depth:'~3.8m',distShore:'~280m',drift:'→ SE 0.5 m/s',
+    chartNote:'已进入 3m+ 深水界，靠近离岸流 C3 区。漂移加速，需冲锋艇支援。',
+    reasons:['越过深水界（3m 等深线）','距岸约 280m','HR 162bpm 持续升高','离岸流漂移风险高'],
+    crisis:85,cl:'Emergency · 85',cs:'深水越界',ccolor:'var(--og)',
+    requiredAsset:'冲锋艇',search:null,trajectory:null,candidates:null,reportArea:null
+  },
+  'T-006':{
+    lc:0,note:'自动检测 · 待手环确认',risk:'watch',rl:'Watch',status:'Detected',rescuePhase:'pending',
+    av:'?',name:'疑似游客 · A-3312',meta:'D-1 中水区',source:'系统静止检测 · 雷达+手环弱匹配',
+    personId:'A-3312',
+    probeBand:{id:'A-3312',match:78,label:'男性 ~28岁',battery:'62%'},
+    confidence:78,cx:750,cy:298,depth:'~2.4m',distShore:'~120m',drift:'—',
+    detectedAt:'14:03',lastSignalAt:'14:11',
+    chartNote:'雷达静止点与手环 A-3312 位置融合（78%）。优先向手表发送「是否需要帮助」确认，无需先派救生员目视。',
+    signals:[
+      {label:'静止时长',value:'8m 42s',status:'warn'},
+      {label:'位移',value:'< 2m',status:'warn'},
+      {label:'手环匹配',value:'A-3312 · 78%',status:'warn'},
+      {label:'危机指数',value:'35 · Watch',status:'ok'},
+      {label:'手环电量',value:'62%',status:'neutral'},
+      {label:'最近目击',value:'无报案',status:'neutral'},
+    ],
+    verifySteps:['向 A-3312 发送手表确认消息','等待用户选择「需要帮助」或「我没事」','若用户求助 → 自动确认风险并派遣','若用户无事 / 超时无应答 → 标记误报或升级复核'],
+    reasons:['静止 8min+ 无位移','雷达回波与手环 A-3312 弱融合 78%','视频 AI 置信度 61%，未达自动报警','同区域 10min 内无群众报案'],
+    crisis:35,cl:'Watch · 35',cs:'1 观察案例',ccolor:'var(--gn)',
+    requiredAsset:'手环远程确认',search:null,trajectory:null,candidates:null,reportArea:null,
+    watchProbe:null
+  },
+};
+
+let queue=[
+  {id:'T-003',desc:'心率异常 · C-4',meta:'14:37 · 派遣中',risk:'emergency'},
+  {id:'T-004',desc:'失踪儿童 · B-2',meta:'14:31 · 已确认',risk:'alert'},
+  {id:'T-005',desc:'越界 · 深水区',meta:'14:28 · 处置中',risk:'emergency'},
+  {id:'T-006',desc:'静止异常 · D-1',meta:'14:11 · 待确认',risk:'watch'},
+];
+
+function renderQueue(){
+  const others=queue.filter(q=>q.id!==currentTask&&tasks[q.id]?.status!=='Resolved');
+  document.getElementById('queueCount').textContent=others.length;
+  document.getElementById('qsec').innerHTML=others.length?others.map(q=>{
+    const t=tasks[q.id];
+    const phase=t?deriveRescuePhase(t):'none';
+    return`<div class="qi" onclick="handleTaskSwitch('${q.id}')">
+      <div class="qbar ${q.risk}"></div>
+      <div class="qinfo"><div class="qid">${q.id}</div><div class="qdesc">${q.desc}</div><div class="qmeta">${STATUS_CN[t.status]} · ${t.assignedName||'未指派'}</div></div>
+      ${rescueBadgeHtml(phase)}
+    </div>`;
+  }).join(''):'<div style="padding:8px 12px;font-size:var(--text-xs);color:var(--tx3)">无其他待办</div>';
+}
+
+function updateDashboardStats(){
+  const activeTasks=Object.values(tasks).filter(t=>t.status!=='Resolved').length;
+  const guardsTotal=Object.keys(guards).length;
+  document.getElementById('topTaskCount').textContent=activeTasks;
+  document.getElementById('topGuardCount').textContent=guardsTotal;
+  document.getElementById('ovTasks').textContent=activeTasks;
+  document.getElementById('ovGuards').textContent=guardsTotal;
+  document.getElementById('guardSummary').textContent=`救生员通联 · ${guardsTotal} 人在岗`;
+  document.getElementById('evcnt').textContent=document.querySelectorAll('#evlist .ev').length;
+  lastDataSync=Date.now();
+}
+
+function releaseGuard(task){
+  if(!task?.assignedGuard||!guards[task.assignedGuard])return;
+  const g=guards[task.assignedGuard];
+  if(g.task===currentTask||g.task===task.id){
+    g.status='free';
+    delete g.task;
+  }
+}
+
+function updateActionGuide(t,disp,id){
+  const s=t.status;
+  let step,hint,primary,secondary,meta='';
+  if(s==='Detected'){
+    const band=getWatchTarget(t);
+    const wp=t.watchProbe;
+    step='步骤 1 · 手环远程确认';
+    if(band&&!wp){
+      hint=`系统已将静止点与手环 ${band.id} 弱匹配（${band.match}%）。请先向手表发送确认，由用户自行回应是否需要帮助。`;
+      primary={cls:'prim',label:'发送手表确认',sub:`${band.id} · ${band.label}`,fn:'sendWatchProbe'};
+      secondary={label:'标记误报',fn:'openResolve'};
+    }else if(wp?.status==='pending'){
+      hint=`已向 ${wp.bandId} 发送确认，等待用户在手表上选择。`;
+      primary={cls:'gh',label:'等待手表回应…',sub:wp.sentAt,disabled:true};
+      secondary={label:'重新发送',fn:'sendWatchProbe'};
+    }else if(wp?.status==='help'){
+      hint=`${wp.bandId} 已回复「需要帮助」。请确认风险并派遣救生员。`;
+      primary={cls:'emg',label:'用户求助 · 确认风险',sub:'手表已确认求救',fn:'confirmRisk'};
+      secondary={label:'标记误报',fn:'openResolve'};
+    }else if(wp?.status==='ok'){
+      hint=`${wp.bandId} 回复「我没事」。建议标记误报关闭任务。`;
+      primary={cls:'prim',label:'用户无事 · 关闭任务',sub:'',fn:'openResolve'};
+      secondary={label:'仍不放心 · 确认风险',fn:'confirmRisk'};
+    }else if(wp?.status==='timeout'){
+      hint=`${wp.bandId} 超时无应答。可再次发送，或按风险等级人工确认。`;
+      primary={cls:'prim',label:'再次发送手表确认',sub:'',fn:'sendWatchProbe'};
+      secondary={label:'无应答 · 确认风险',fn:'confirmRisk'};
+    }else{
+      hint='请先看右侧「风险研判」，选手环确认或人工判定。';
+      primary={cls:'emg',label:'确认风险',sub:'已核对，判定为真实事件',fn:'confirmRisk'};
+      secondary={label:'标记误报',fn:'openResolve'};
+    }
+  }else if(s==='Confirmed'){
+    step='步骤 2 · 派遣救生员';
+    hint='风险已确认。点击派遣，地图将显示路线与 ETA。';
+    primary={cls:t.risk==='emergency'?'emg':'prim',label:`派遣 ${disp.name}`,sub:`${disp.gid} · ${disp.dist}m · ${disp.etaStr}`,fn:'openDispatch'};
+  }else if(s==='Dispatched'){
+    if(!t.assignmentAck){
+      step='步骤 3 · 等待救生员接单';
+      hint=`派遣指令已发送给 ${t.assignedName||disp.name}，尚未收到现场终端确认。`;
+      meta=`<b>${t.assignedName||disp.name} ${t.assignedGuard||disp.gid}</b> · 超时后应改派或升级`;
+      primary={cls:'prim',label:'模拟救生员确认接单',fn:'acknowledgeDispatch'};
+      secondary={label:'超时改派',fn:'openDispatch'};
+    }else{
+      step='步骤 3 · 等待到达';
+      hint=`${t.assignedName||disp.name} 已接单并出发。地图虚线为路线。`;
+      meta=`<b>${t.assignedName||disp.name} ${t.assignedGuard||disp.gid}</b> · 距目标 <b>${disp.dist}m</b> · ${disp.etaStr}`;
+      primary={cls:'prim',label:'现场确认已到达',fn:"advanceStatus('progress')"};
+      secondary={label:'改派他人',fn:'openDispatch'};
+    }
+  }else if(s==='In progress'){
+    step='步骤 4 · 完成回写';
+    hint=`${t.assignedName||disp.name} 已在现场。记录处置结果后关闭任务。`;
+    meta=`<b>${t.assignedName||disp.name}</b> 处置中 · ${t.meta}`;
+    primary={cls:'emg',label:'完成回写',fn:'openResolve'};
+  }else if(s==='Escalated'){
+    step='任务已移交管理中心';hint='当前任务仍保持活跃，等待上级中心或联动力量接管确认。';primary=null;
+  }else if(s==='Resolved'){
+    step='任务已关闭';hint=t.note||'处置结果已回写，救援资源已释放。';primary=null;
+  }else{
+    step='当前任务';hint='查看地图定位与详情。';primary=null;
+  }
+  let html=`<button class="ag-primary gh" style="margin-bottom:6px;font-size:var(--text-xs);padding:6px;flex-direction:row" onclick="exitToOverview()">← 返回全域纵览</button>`;
+  html+=rescueBadgeHtml(deriveRescuePhase(t),'lg');
+  html+=`<div class="ag-step">${step}</div><div class="ag-hint">${hint}</div>`;
+  if(meta)html+=`<div class="ag-meta">${meta}</div>`;
+  const commGid=t.assignedGuard||disp.gid;
+  if(commGid&&['Confirmed','Dispatched','In progress'].includes(s)){
+    html+=`<div class="ag-row" style="margin-bottom:6px">
+      <button class="ag-primary gh" onclick="openComm('${commGid}','call')"><span class="material-symbols-outlined sm">call</span> 通话</button>
+      <button class="ag-primary gh" onclick="openComm('${commGid}','msg')"><span class="material-symbols-outlined sm">chat</span> 留言</button>
+    </div>`;
+  }
+  if(primary){
+    const dis=primary.disabled?' disabled':'';
+    const click=primary.disabled?'':` onclick="${primary.fn}()"`;
+    html+=`<button class="ag-primary ${primary.cls}"${dis}${click}>${primary.label}${primary.sub?`<span class="ag-sub">${primary.sub}</span>`:''}</button>`;
+  }
+  if(secondary)html+=`<div class="ag-row"><button class="ag-primary gh" onclick="${secondary.fn}()">${secondary.label}</button></div>`;
+  document.getElementById('actionGuide').innerHTML=html;
+}
+
+function updateTaskSummary(t,id){
+  const zone=(t.meta.match(/[A-E]-?\d?/)||['—'])[0];
+  const shortName=(t.name.split('·')[0]||t.name).trim();
+  const st=STATUS_CN[t.status]||t.status;
+  document.getElementById('taskSummary').innerHTML=`
+    <div class="ts-head">
+      <span class="ts-id">${id}</span>
+      <span class="ts-loc">${zone} · ${st}</span>
+    </div>
+    <div class="ts-facts">
+      <span class="ts-fact">${shortName}</span>
+      <span class="ts-fact ${t.risk==='emergency'?'hot':''}">${t.depth||'—'}</span>
+      <span class="ts-fact">${t.distShore||'—'}</span>
+    </div>`;
+  document.getElementById('rtid').textContent=id;
+}
+
+function syncEventHighlight(taskId){
+  document.querySelectorAll('.ev[data-task]').forEach(el=>{
+    const on=el.dataset.task===taskId;
+    el.classList.toggle('on',on);
+    el.classList.toggle('dim',!on);
+  });
+}
+
+function advanceStatus(next){
+  const t=tasks[currentTask];if(!t)return;
+  if(next==='progress'){
+    if(!t.assignmentAck){showInfoToast('尚未收到救生员接单确认，不能标记到场。');return;}
+    t.status='In progress';t.lc=3;
+    t.note=(t.assignedName||'救生员')+' 已到场 · 处置中';
+    document.querySelectorAll('.lcs').forEach((el,i)=>{el.classList.remove('on','done');if(i<3)el.classList.add('done');else if(i===3)el.classList.add('on');});
+  }
+  selTask(currentTask);
+}
+
+function confirmRisk(){
+  const t=tasks[currentTask];if(!t||t.status!=='Detected')return;
+  t.status='Confirmed';t.lc=1;
+  t.rescuePhase=(t.risk==='emergency'||t.risk==='alert')?'active':'pending';
+  t.note=`${currentTask} · 风险已人工确认 · 等待派遣`;
+  document.querySelectorAll('.lcs').forEach((el,i)=>{el.classList.remove('on','done');if(i<1)el.classList.add('done');else if(i===1)el.classList.add('on');});
+  showInfoToast(`<b>${currentTask}</b> 风险已确认 · 下一步可派遣救生员`);
+  renderEventBadges();
+  updateRescueGlobal();
+  selTask(currentTask);
+}
+
+function confirmRiskFor(id){
+  enterTaskDetail(id);
+  confirmRisk();
+}
+
+function openResolveFor(id){
+  enterTaskDetail(id);
+  openResolve();
+}
+
+function acknowledgeDispatch(){
+  const t=tasks[currentTask];if(!t||t.status!=='Dispatched')return;
+  t.assignmentAck=true;
+  t.note=`${t.assignedName} 已接单 · 前往中`;
+  commLog.push({time:new Date().toTimeString().slice(0,5),gid:t.assignedGuard,dir:'in',type:'msg',text:`已接单 ${currentTask}，正在前往`});
+  selTask(currentTask);
+}
+
+function selTask(id){
+  closeAlert();closeInfoToast();
+  const t=tasks[id];if(!t)return;
+  currentTask=id;
+  focusPersonId=t.personId||null;
+  focusMap(t.cx,t.cy,17);
+  document.getElementById('mapwrap').classList.add('focused');
+  const disp=getDispatchInfo(t.cx,t.cy,t.assignedGuard);
+  renderPeople();
+  renderTaskMarkers();
+  renderRouteOverlay(t,disp);
+  renderSearchOverlays(id);
+  updateZoneHud(getTaskZone(t),{depth:t.depth});
+  document.getElementById('chartCtx').className='chart-ctx';
+  document.getElementById('lc-tid').textContent=id;
+  document.getElementById('lc-note').textContent=t.note;
+  document.querySelectorAll('.lcs').forEach((el,i)=>{el.classList.remove('on','done');if(i<t.lc)el.classList.add('done');else if(i===t.lc)el.classList.add('on');});
+  document.getElementById('cbar').style.width=t.crisis+'%';
+  document.getElementById('cbar').style.background=t.ccolor;
+  document.getElementById('clevel').textContent=t.cl;
+  document.getElementById('csub').textContent=t.cs;
+  document.getElementById('btnDispatch').className='abt '+(t.risk==='emergency'?'emg':'prim');
+  document.getElementById('dp-task-info').textContent=`任务 ${id} · ${t.name}`;
+  updateActionGuide(t,disp,id);
+  updateTaskSummary(t,id);
+  applyRescueContext(deriveRescuePhase(t));
+  updateRescueGlobal();
+  renderEventBadges();
+  let confHtml=t.confidence?`<div class="conf-row"><span class="conf-val">${t.confidence}%</span><span class="conf-lbl">匹配置信度</span></div>`:'';
+  const riskBlock=t.status==='Detected'?renderRiskBriefHtml(t,id):'';
+  document.getElementById('tcard').innerHTML=`
+    ${riskBlock||`<div class="src-row">来源：<b>${t.source}</b></div>${confHtml}<div class="rlist">${t.reasons.map(r=>`<div class="rrow"><span class="material-symbols-outlined sm ri">warning</span>${r}</div>`).join('')}</div>`}`;
+  const detailFold=document.querySelector('.detail-fold');
+  if(detailFold&&t.status==='Detected')detailFold.open=true;
+  if(t.status==='Detected'){
+    document.getElementById('riskFoldSummary').textContent='风险研判 · 确认前请对照';
+  }else{
+    document.getElementById('riskFoldSummary').textContent='风险详情 · 系统判断依据';
+  }
+  const candFold=document.getElementById('candFold');
+  if(t.candidates){
+    candFold.style.display='';
+    document.getElementById('candidates').innerHTML=
+      t.candidates.map((c,i)=>`<div class="cand-item ${i===0?'on':''}" data-pid="${c.id}" onclick="selCandidate('${c.id}')"><span class="cand-id">${c.id}</span><div class="cand-bar"><div class="cand-fill" style="width:${c.pct}%"></div></div><span class="cand-pct">${c.pct}%</span></div>`).join('');
+  }else{candFold.style.display='none';candFold.open=false;}
+  syncEventHighlight(id);
+  renderQueue();
+}
+
+
+function updateChartCtx(id){
+  /* 信息已合并至右侧操作指引，地图不再重复展示卡片 */
+}
+
+function selEv(i){openEvent(i+1);}
+
+function toggleLayer(name,btn){
+  layers[name]=!layers[name];
+  btn.classList.toggle('on',layers[name]);
+  if(name==='env')document.getElementById('chartHud').style.display=layers.env?'':'none';
+  if(name==='search'&&currentTask)renderSearchOverlays(currentTask);
+  renderLeafletMarkers(currentTask||previewTaskId);
+}
+
+function selGuard(el,id,name,dist){
+  document.querySelectorAll('.gitem').forEach(g=>g.classList.remove('sel'));
+  el.classList.add('sel');
+  selGuardData={id,name,dist};
+  document.getElementById('dp-confirm').disabled=false;
+}
+function selGuardOnMap(id){
+  const info={'LG-01':'李明 · 执行 T-005','LG-02':'陈志远 · 空闲 · B区','LG-03':'黄晓明 · 巡逻中','LG-04':'张磊 · 待命','LG-05':'王芳 · 空闲 · C区'};
+  document.getElementById('lc-note').textContent=info[id]||id;
+}
+
+function renderDispatchGuards(){
+  const t=tasks[currentTask];if(!t)return;
+  const items=Object.entries(guards).map(([id,g])=>{
+    const dm=distM(g.cx,g.cy,t.cx,t.cy);
+    const busy=g.status==='busy';
+    const need=t.requiredAsset||'';
+    const compatible=!need||g.cap.includes(need)||g.asset.includes(need)||(need==='岸巡复核'&&g.cap.includes('岸巡'));
+    return{id,g,dm,busy,compatible,dist:dm+'m',eta:fmtEta(etaSec(dm,g.status))};
+  }).sort((a,b)=>Number(b.compatible)-Number(a.compatible)||a.dm-b.dm);
+  document.getElementById('glist').innerHTML=`<div class="dp-task">任务需求：${t.requiredAsset||'通用救援'}</div>`+items.map(({id,g,busy,compatible,dist,eta})=>`
+    <div class="gitem" data-gid="${id}" ${busy||!compatible?'':'onclick="selGuard(this,\''+id+'\',\''+g.name+'\',\''+dist+'\')"'}>
+      <div class="gave" style="background:${busy?'var(--og)':'var(--gn)'};">${g.name[0]}</div>
+      <div style="flex:1"><div class="gname">${g.name} · ${id}</div><div class="gmeta">${g.cap} · ${g.asset}<br>距事发点 <span class="gdist">${dist}</span> · ${eta}</div></div>
+      ${guardCommActionsHtml(id)}
+      <span class="gstatus ${busy||!compatible?'busy':'free'}">${busy?'执行中':compatible?'可派遣':'能力不匹配'}</span>
+    </div>`).join('');
+  selGuardData=null;
+  document.getElementById('dp-confirm').disabled=true;
+  document.querySelectorAll('.gitem').forEach(g=>g.classList.remove('sel'));
+  const free=items.find(it=>!it.busy&&it.compatible);
+  if(free){
+    const el=document.querySelector(`#glist .gitem[data-gid="${free.id}"]`);
+    if(el)selGuard(el,free.id,free.g.name,free.dist);
+  }
+}
+
+function openDispatch(){
+  closeMapPanels('dispatch');
+  renderDispatchGuards();
+  document.getElementById('dispatchPop').classList.add('show');
+  document.getElementById('moreMenu').classList.remove('show');
+}
+function closeDispatch(){document.getElementById('dispatchPop').classList.remove('show');selGuardData=null;document.querySelectorAll('.gitem').forEach(g=>g.classList.remove('sel'));document.getElementById('dp-confirm').disabled=true;}
+function closeAllPopups(){closeComm();closeDispatch();closeResolve();closeAlert();closeArchive();closeInfoToast();}
+function confirmDispatch(){
+  if(!selGuardData)return;
+  const {name,id,dist}=selGuardData;
+  const t=tasks[currentTask];
+  if(t){
+    if(t.assignedGuard&&t.assignedGuard!==id&&guards[t.assignedGuard]?.task===currentTask){
+      guards[t.assignedGuard].status='free';delete guards[t.assignedGuard].task;
+    }
+    t.status='Dispatched';t.lc=2;t.assignedGuard=id;t.assignedName=name;
+    t.assignmentAck=false;
+    t.rescuePhase='active';
+    t.note=name+' '+id+' · 指令已发送，等待接单';
+    guards[id].status='busy';guards[id].task=currentTask;
+  }
+  document.getElementById('lc-note').textContent=name+' '+id+' · 等待接单确认';
+  document.querySelectorAll('.lcs').forEach((el,i)=>{el.classList.remove('on','done');if(i<2)el.classList.add('done');else if(i===2)el.classList.add('on');});
+  const msg=`${currentTask} · ${t.name.split('·')[0].trim()} · 请确认接单并立即前往事发点`;
+  commLog.push({time:new Date().toTimeString().slice(0,5),gid:id,dir:'out',type:'msg',text:msg});
+  renderCommGuardList();
+  updateDashboardStats();
+  closeDispatch();
+  selTask(currentTask);
+}
+
+function showAlert(){document.getElementById('alertPop').classList.add('show');}
+function closeAlert(){document.getElementById('alertPop').classList.remove('show');}
+function createTaskFromAlert(){
+  const age=Number(document.getElementById('reportAge').value);
+  const zone=document.getElementById('reportZone').value;
+  const lastSeen=document.getElementById('reportTime').value;
+  const desc=document.getElementById('reportDesc').value.trim();
+  const station=document.getElementById('reportStation').value.trim();
+  const hasBand=document.getElementById('reportBand').checked;
+  if(!age||!lastSeen||!desc||!station){showInfoToast('请先补全年龄、时间、特征和家长等候点。');return;}
+  closeAlert();
+  document.getElementById('lc-note').textContent=`T-007 已创建 · ${age}岁儿童失踪 · 搜索圈已生成`;
+  if(!tasks['T-007']){
+    const points={'A-1':[140,215],'B-2':[455,235],'C-4':[560,285],'D-1':[750,315]};
+    const [cx,cy]=points[zone]||points['B-2'];
+    tasks['T-007']={
+      id:'T-007',lc:0,note:`待确认 · 最后目击 ${lastSeen}`,risk:'alert',rl:'Alert',status:'Detected',rescuePhase:'pending',
+      av:'童',name:'失踪儿童',meta:`${age}岁 · ${zone}`,source:'家长电话报案 · S-03',
+      confidence:hasBand?61:null,cx,cy,depth:zone==='B-2'?'~0.8m':'~1.5m',distShore:zone==='B-2'?'~40m':'~90m',
+      detectedAt:'14:39',lastSignalAt:lastSeen,
+      chartNote:hasBand
+        ?'家长报案儿童失踪，系统在手环候选中找到中等匹配。需核对年龄、泳裤颜色与最后目击时间后再确认。'
+        :'家长报案儿童失踪，但无手环绑定。需按外貌特征在搜索圈内排查，确认前建议扩大视频检索。',
+      signals:[
+        {label:'报案来源',value:'家长电话',status:'warn'},
+        {label:'儿童年龄',value:age+'岁',status:'warn'},
+        {label:'最后目击',value:lastSeen,status:'warn'},
+        {label:'手环匹配',value:hasBand?'A-2204 · 61%':'无',status:hasBand?'warn':'bad'},
+        {label:'危机指数',value:'62 · Alert',status:'warn'},
+        {label:'同区巡逻',value:'黄晓明 LG-03 · 180m',status:'ok'},
+      ],
+      verifySteps:[
+        '向候选手环发送手表确认（优先 A-2204）',
+        '等待用户选择「需要帮助」或「我没事」',
+        '若用户求助 → 确认风险并派遣',
+        '若无手环 / 超时无应答 → 扩大搜索或人工复核',
+      ],
+      probeBand:null,
+      watchProbe:null,
+      reasons:[`家长报案：${age}岁 · ${desc}`,`最后目击 ${lastSeen} · ${zone}`,`家长在 ${station} 等候`,hasBand?'手环 A-2204 候选匹配 61%，待人工确认':'未佩戴手环，需按外貌与区域搜索'],
+      crisis:62,cl:'Alert · 62',cs:'新增报案',ccolor:'var(--og)',requiredAsset:'儿童搜寻',
+      search:{r1:50,r2:88},trajectory:null,
+      candidates:hasBand?[{id:'A-2204',pct:61},{id:'A-2198',pct:48}]:null,
+      reportArea:{cx,cy:cy-7,rx:38,ry:16}
+    };
+    queue.unshift({id:'T-007',desc:`${age}岁儿童失踪 · ${zone}`,meta:`${lastSeen} · 待确认`,risk:'alert'});
+    const callRow=document.querySelector('.ev[data-ev="0"]');
+    if(callRow){
+      callRow.dataset.task='T-007';callRow.onclick=()=>enterTaskDetail('T-007');
+      callRow.classList.remove('urgent');
+      callRow.querySelector('.edesc').textContent=`${age}岁儿童失踪 · ${zone}`;
+      callRow.querySelector('.esub').textContent=`已建 T-007 · ${desc}`;
+      callRow.querySelector('.etag').textContent='报案';
+    }
+    renderQueue();renderTaskMarkers();
+  }
+  updateDashboardStats();
+  enterTaskDetail('T-007');
+}
+
+function toggleMore(e){e.stopPropagation();document.getElementById('moreMenu').classList.toggle('show');}
+document.addEventListener('click',()=>document.getElementById('moreMenu').classList.remove('show'));
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeAllPopups();});
+
+function doAct(a){
+  if(a==='false'){openResolve();return;}
+  const m={expand:'搜索范围已扩大至 300m · 地图已更新',lock:'C-4 区域已封锁 · 广播已发送',broadcast:'全区广播已发送：注意暗流区',escalate:'警报已升级至 Emergency',false:'已标记为疑似误报 · 等待确认',dispatch:'正在派遣救生员...'};
+  document.getElementById('lc-note').textContent=m[a]||a;
+  if(a==='expand'&&tasks[currentTask]){
+    const old=tasks[currentTask].search||{r1:48,r2:85};
+    tasks[currentTask].search={r1:Math.max(old.r1,120),r2:Math.max(old.r2,300)};
+    renderSearchOverlays(currentTask);
+    layers.search=true;
+    document.querySelector('[data-layer=search]').classList.add('on');
+    document.getElementById('layer-search').style.display='';
+  }
+}
+
+function openResolve(){
+  closeMapPanels('resolve');
+  const t=tasks[currentTask];if(!t)return;
+  const allowed=t.status==='Detected'?['false']:t.status==='Confirmed'?['false','escalate']:['found','notfound','false','continue','escalate'];
+  document.querySelectorAll('.res-btn').forEach(btn=>{
+    const action=(btn.getAttribute('onclick').match(/'([^']+)'/)||[])[1];
+    btn.style.display=allowed.includes(action)?'':'none';
+  });
+  document.getElementById('resolvePop').classList.add('show');
+  document.getElementById('resolve-task-info').textContent=currentTask+' · 选择处理结果';
+  document.getElementById('moreMenu').classList.remove('show');
+}
+function closeResolve(){document.getElementById('resolvePop').classList.remove('show');resolvePick=null;document.querySelectorAll('.res-btn').forEach(b=>b.classList.remove('sel'));document.getElementById('resolve-confirm').disabled=true;}
+function pickResolve(btn,val){document.querySelectorAll('.res-btn').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');resolvePick=val;document.getElementById('resolve-confirm').disabled=false;}
+function confirmResolve(){
+  if(!resolvePick)return;
+  const t=tasks[currentTask];if(!t)return;
+  const labels={found:'已找到 · 任务 Resolved',notfound:'未找到 · 继续搜索',false:'误报 · 任务关闭',continue:'继续搜索 · 范围已扩大',escalate:'已转交管理中心'};
+  const result=resolvePick;
+  t.result=result;
+  if(result==='found'||result==='false'){
+    t.status='Resolved';t.lc=4;t.rescuePhase='none';
+    t.note=`${currentTask} · ${labels[result]} · ${new Date().toTimeString().slice(0,5)}`;
+    releaseGuard(t);
+  }else if(result==='notfound'||result==='continue'){
+    t.status='In progress';t.lc=3;t.rescuePhase='active';
+    t.note=`${currentTask} · ${labels[result]} · 保持任务开启`;
+    const old=t.search||{r1:48,r2:85};
+    t.search={r1:Math.max(old.r1,120),r2:Math.max(old.r2,300)};
+  }else if(result==='escalate'){
+    t.status='Escalated';t.lc=3;t.rescuePhase='active';
+    t.note=`${currentTask} · 已转交管理中心 · 等待接管确认`;
+  }
+  closeResolve();
+  renderCommGuardList();
+  renderQueue();
+  updateDashboardStats();
+  selTask(currentTask);
+}
+
+/* Map tooltip */
+const mtip=document.getElementById('mtip');
+const mapwrap=document.getElementById('mapwrap');
+mapwrap.addEventListener('mousemove',e=>{
+  const t=e.target.closest('[data-tip]');
+  if(t){
+    mtip.innerHTML=t.getAttribute('data-tip').replace(/ · /g,'<br>');
+    mtip.className='mtip show';
+    const r=mapwrap.getBoundingClientRect();
+    mtip.style.left=Math.min(e.clientX-r.left+12,r.width-170)+'px';
+    mtip.style.top=Math.max(e.clientY-r.top-10,4)+'px';
+  }else{mtip.className='mtip';}
+});
+
+renderEventBadges();
+renderQueue();
+renderCommGuardList();
+updateRescueGlobal();
+updateDashboardStats();
+initLeafletMap();
+enterOverview();
+setTimeout(()=>{if(leafletMap)leafletMap.invalidateSize();},300);
+</script>
+<script src="vendor/lucide.min.js"></script>
+<script src="aquaguard-icons.js"></script>
+</body>
+</html>

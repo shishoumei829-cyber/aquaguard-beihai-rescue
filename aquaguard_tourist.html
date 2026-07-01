@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html class="light tourist-app" lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
+<title>AquaGuard · 关联追踪</title>
+<link rel="stylesheet" href="aquaguard-lumina.css">
+<link rel="stylesheet" href="aquaguard-stitch.css">
+<link rel="stylesheet" href="aquaguard-glass.css">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script id="tailwind-config">
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        primary: "var(--primary)",
+        secondary: "var(--secondary)",
+        "on-primary": "var(--on-primary)",
+        surface: "var(--surface)",
+        "surface-container": "var(--surface-container)",
+        "outline-variant": "var(--outline-variant)",
+        "on-surface": "var(--on-surface)",
+        "on-surface-variant": "var(--on-surface-variant)",
+        safe: "var(--safe)",
+        danger: "var(--danger)",
+        "warning-dark": "var(--warning-dark)"
+      },
+      borderRadius: {
+        DEFAULT: "var(--radius-sm)",
+        lg: "var(--radius-lg)",
+        xl: "var(--radius-xl)",
+        full: "9999px"
+      },
+      fontFamily: {
+        hanken: ["var(--font-sans)"],
+        mono: ["var(--font-mono)"]
+      },
+      fontSize: {
+        micro: ["var(--text-micro)", { lineHeight: "1.25" }],
+        "2xs": ["var(--text-2xs)", { lineHeight: "1.25" }],
+        xs: ["var(--text-xs)", { lineHeight: "1.25" }],
+        sm: ["var(--text-sm)", { lineHeight: "1.45" }],
+        base: ["var(--text-base)", { lineHeight: "1.45" }],
+        md: ["var(--text-md)", { lineHeight: "1.45" }],
+        lg: ["var(--text-lg)", { lineHeight: "1.45" }],
+        xl: ["var(--text-xl)", { lineHeight: "1.4" }],
+        "2xl": ["var(--text-2xl)", { lineHeight: "1.35" }],
+        "3xl": ["var(--text-3xl)", { lineHeight: "1.25" }],
+        "4xl": ["var(--text-4xl)", { lineHeight: "1.2" }]
+      },
+      boxShadow: {
+        card: "var(--card-shadow)",
+        primary: "var(--shadow-primary)"
+      }
+    }
+  }
+}
+</script>
+<style>
+body.device-preview{margin:0;}
+.card-shadow{box-shadow:var(--card-shadow);}
+.map-gradient{background:linear-gradient(180deg,rgba(24,46,125,0) 0%,rgba(24,46,125,0.22) 100%);position:absolute;inset:0;}
+.no-scrollbar::-webkit-scrollbar{display:none;}
+.no-scrollbar{-ms-overflow-style:none;scrollbar-width:none;}
+.mini-map-wrap{position:relative;height:104px;border-radius:var(--radius-lg);overflow:hidden;border:1px solid rgba(24,46,125,0.08);}
+.mini-map{width:100%;height:100%;background:#dce3ef;}
+.mini-map .leaflet-control-container{display:none;}
+.mini-map .leaflet-pane{z-index:1;}
+.map-gradient{pointer-events:none;z-index:400;}
+.map-pin-me,.map-pin-them{width:12px;height:12px;border-radius:50%;border:2.5px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.35);}
+.map-pin-me{background:var(--safe);}
+.map-pin-them{background:var(--secondary);}
+.map-pin-them.pulse{animation:pinPulse 2.2s ease infinite;}
+@keyframes pinPulse{0%,100%{box-shadow:0 0 0 0 rgba(247,159,71,0.45)}50%{box-shadow:0 0 0 9px rgba(247,159,71,0)}}
+.sos-badge{width:44px;height:44px;border-radius:var(--radius-lg);background:var(--secondary);display:flex;align-items:center;justify-content:center;font-size:var(--text-base);font-weight:800;color:#fff;letter-spacing:0.08em;line-height:1;flex-shrink:0;}
+.sos-badge.sm{width:auto;min-width:0;height:auto;padding:0;background:transparent;font-size:0;letter-spacing:0;}
+.sos-badge.sm::before{content:none;}
+.help-icon-box .sos-badge{width:44px;height:44px;font-size:var(--text-base);}
+.group:hover .sos-badge{background:#fff;color:var(--secondary);}
+
+.view{display:none;flex-direction:column;flex:1;min-height:0;overflow:hidden;}
+.view.active{display:flex;}
+.overlay{position:absolute;inset:0;background:rgba(15,20,35,0.52);z-index:100;display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(2px);}
+.overlay.show{display:flex;}
+.overlay.center{align-items:center;padding:16px;}
+.sheet{width:100%;background:#fff;border-radius:20px 20px 0 0;padding:8px 20px 24px;animation:sheetUp .32s cubic-bezier(.32,.72,0,1);max-height:82%;overflow-y:auto;}
+@keyframes sheetUp{from{transform:translateY(100%)}to{transform:none}}
+@keyframes popIn{from{transform:scale(.9);opacity:0}to{transform:none;opacity:1}}
+.dialog{animation:popIn .35s cubic-bezier(.34,1.2,.64,1);}
+@keyframes scanLine{0%,100%{top:20px;opacity:.45}50%{top:calc(100% - 22px);opacity:1}}
+.scan-line{animation:scanLine 2.5s ease-in-out infinite;}
+.lumina-toast#toast{bottom:72px;}
+.qr-grid{display:grid;grid-template-columns:repeat(9,1fr);gap:2px;width:100%;height:100%;}
+.qr-cell{background:var(--on-surface);border-radius:1px;}
+.qr-cell.w{background:transparent;}
+.dock-blur{background:rgba(251,248,255,0.92);backdrop-filter:blur(12px);border-top:1px solid rgba(226,228,237,0.9);}
+</style>
+</head>
+<body class="device-preview font-hanken text-on-surface">
+
+<div class="phone-shell">
+  <div class="device text-on-surface" id="device">
+    <div class="dynamic-island" aria-hidden="true"></div>
+
+    <div class="status-bar">
+      <span class="sb-time">9:41</span>
+      <span class="sb-icons">
+        <span class="material-symbols-outlined">signal_cellular_alt</span>
+        <span class="material-symbols-outlined">wifi</span>
+        <span class="material-symbols-outlined">battery_full</span>
+      </span>
+    </div>
+
+    <!-- HEADER -->
+    <header class="shrink-0 px-5 pb-4 pt-1 flex items-center justify-between glass-header" style="background: transparent !important; color: var(--primary) !important;">
+      <div class="flex items-center gap-3 text-primary" style="color: var(--primary) !important;">
+        <div class="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center backdrop-blur-sm">
+          <span class="material-symbols-outlined lg fill" style="color: var(--primary) !important;">waves</span>
+        </div>
+        <div>
+          <h1 class="text-3xl font-bold tracking-tight leading-tight">AquaGuard</h1>
+          <p class="text-xs opacity-65 uppercase tracking-[0.14em] font-semibold" id="hdrTag" style="color: var(--primary) !important;">Safety Monitor</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="btnBack" class="hidden w-10 h-10 items-center justify-center rounded-xl bg-primary/10 active:scale-95 text-primary border border-primary/10 transition-transform" aria-label="返回">
+          <span class="material-symbols-outlined md">arrow_back</span>
+        </button>
+        <button id="btnPlus" class="w-10 h-10 flex items-center justify-center rounded-xl bg-gradient-to-br from-[#fea54c] to-secondary text-white shadow-lg shadow-secondary/35 active:scale-95 transition-transform" aria-label="添加关联">
+          <span class="material-symbols-outlined md">person_add</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- HOME -->
+    <div class="view active flex-1 bg-transparent" id="viewHome">
+      <main class="flex-1 px-4 pt-3 pb-0 flex flex-col gap-4 overflow-hidden min-h-0">
+
+        <div class="shrink-0 mobile-card rounded-2xl p-4 flex items-center justify-between card-shadow border border-outline-variant/60 relative overflow-hidden">
+          <div class="absolute -right-6 -top-6 w-28 h-28 bg-primary/[0.04] rounded-full"></div>
+          <div class="flex items-center gap-3 relative z-10 min-w-0">
+            <div class="w-11 h-11 bg-primary/8 rounded-full flex items-center justify-center text-primary shrink-0">
+              <span class="material-symbols-outlined md">my_location</span>
+            </div>
+            <div class="min-w-0">
+              <p class="text-base text-on-surface-variant font-medium">当前位置已同步</p>
+              <p class="text-on-surface font-bold text-base mt-0.5 truncate">活跃区域 · B-2</p>
+              <p class="text-sm text-on-surface-variant mt-0.5">手环 A-1102 · 12:34 更新</p>
+            </div>
+          </div>
+          <span class="shrink-0 ml-2 px-3 py-1.5 bg-secondary text-white rounded-full text-base font-bold shadow-md shadow-secondary/25">浅水区</span>
+        </div>
+
+        <div class="flex-1 flex flex-col gap-3 min-h-0">
+          <div class="flex items-center justify-between px-0.5 shrink-0">
+            <h2 class="text-lg font-bold text-primary flex items-center gap-2">
+              <span class="w-1 h-3.5 bg-secondary rounded-full"></span>
+              关联游客 <span class="text-on-surface-variant font-semibold" id="assocCount">(2)</span>
+            </h2>
+            <button class="text-primary text-xs font-semibold hover:opacity-70" onclick="showToast('编辑列表功能演示')">编辑列表</button>
+          </div>
+
+          <div class="flex-1 overflow-y-auto no-scrollbar space-y-3 pb-1" id="assocList">
+
+            <article class="bg-white rounded-2xl p-4 flex flex-col gap-3.5 card-shadow border border-secondary/30" data-id="1">
+              <div class="flex items-start justify-between gap-3">
+                <div class="flex items-center gap-3 min-w-0">
+                  <div class="relative shrink-0">
+                    <div class="w-11 h-11 bg-surface rounded-xl flex items-center justify-center text-primary font-bold text-sm border border-primary/10">XM</div>
+                    <div class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-secondary border-2 border-white rounded-full"></div>
+                  </div>
+                  <div class="min-w-0">
+                    <h3 class="font-bold text-on-surface text-2xl leading-tight">小明</h3>
+                    <p class="text-base text-on-surface-variant mt-0.5">手环 A-2213 · 7 岁 · 儿子</p>
+                  </div>
+                </div>
+                <span class="ac-badge shrink-0 px-2 py-1 bg-secondary/12 text-warning-dark rounded-lg text-sm font-bold">需关注</span>
+              </div>
+              <div class="mini-map-wrap">
+                <div class="mini-map" id="map-1"></div>
+                <div class="absolute inset-0 map-gradient"></div>
+                <div class="absolute top-2 left-2 px-2 py-0.5 bg-white/92 backdrop-blur-sm rounded-md text-xs font-semibold text-on-surface-variant z-[500]">北海银滩 · B-2</div>
+                <div class="absolute bottom-2.5 right-2.5 px-2.5 py-1 bg-white/92 backdrop-blur-sm rounded-full text-primary font-bold text-sm z-[500]">距离 85 米</div>
+              </div>
+              <div class="flex gap-2.5">
+                <button class="flex-[1.6] h-10 bg-primary text-white rounded-xl font-semibold text-lg flex items-center justify-center gap-1.5 active:scale-[0.98] shadow-md shadow-primary/20" onclick="openRescueForAssoc(1)">
+                  <span class="material-symbols-outlined text-3xl">report</span> 上报求助
+                </button>
+                <button class="flex-1 h-10 border border-primary/15 text-primary rounded-xl font-semibold text-lg flex items-center justify-center gap-1 active:scale-[0.98] bg-white" onclick="viewOnMap(1)">
+                  <span class="material-symbols-outlined text-3xl">near_me</span> 查看
+                </button>
+              </div>
+            </article>
+
+            <article class="bg-white rounded-2xl p-4 flex flex-col gap-3.5 card-shadow border border-outline-variant/60" data-id="2">
+              <div class="flex items-start justify-between gap-3">
+                <div class="flex items-center gap-3 min-w-0">
+                  <div class="w-11 h-11 bg-surface rounded-xl flex items-center justify-center text-primary font-bold text-sm border border-primary/10 shrink-0">李</div>
+                  <div class="min-w-0">
+                    <h3 class="font-bold text-on-surface text-2xl leading-tight">李阿姨</h3>
+                    <p class="text-base text-on-surface-variant mt-0.5">手环 A-3318 · 58 岁 · 母亲</p>
+                  </div>
+                </div>
+                <span class="ac-badge shrink-0 px-2 py-1 bg-safe/10 text-safe rounded-lg text-sm font-bold">状态安全</span>
+              </div>
+              <div class="mini-map-wrap">
+                <div class="mini-map" id="map-2"></div>
+                <div class="absolute inset-0 map-gradient"></div>
+                <div class="absolute top-2 left-2 px-2 py-0.5 bg-white/92 backdrop-blur-sm rounded-md text-xs font-semibold text-on-surface-variant z-[500]">北海银滩 · B-2</div>
+                <div class="absolute bottom-2.5 right-2.5 px-2.5 py-1 bg-white/92 backdrop-blur-sm rounded-full text-primary font-bold text-sm z-[500]">距离 12 米</div>
+              </div>
+              <div class="flex gap-2.5">
+                <button class="flex-[1.6] h-10 bg-primary text-white rounded-xl font-semibold text-lg flex items-center justify-center gap-1.5 active:scale-[0.98] shadow-md shadow-primary/20" onclick="openRescueForAssoc(2)">
+                  <span class="material-symbols-outlined text-3xl">report</span> 上报求助
+                </button>
+                <button class="flex-1 h-10 border border-primary/15 text-primary rounded-xl font-semibold text-lg flex items-center justify-center gap-1 active:scale-[0.98] bg-white" onclick="viewOnMap(2)">
+                  <span class="material-symbols-outlined text-3xl">near_me</span> 查看
+                </button>
+              </div>
+            </article>
+
+          </div>
+        </div>
+
+        <div class="shrink-0 pt-2 pb-1 dock-blur -mx-4 px-4">
+          <button class="w-full bg-white border-2 border-secondary/80 rounded-2xl p-3.5 flex items-center gap-3.5 hover:bg-secondary group transition-colors active:scale-[0.99] shadow-md shadow-secondary/10" onclick="openRescuePage()">
+            <div class="help-icon-box group-hover:[&_.sos-badge]:bg-white group-hover:[&_.sos-badge]:text-secondary">
+              <span class="sos-badge">SOS</span>
+            </div>
+            <div class="flex-1 text-left min-w-0">
+              <p class="font-bold text-on-surface text-xl group-hover:text-white transition-colors">发现有人需要帮助</p>
+              <p class="text-base text-on-surface-variant group-hover:text-white/85 transition-colors mt-0.5">立即向附近救生员发送警报</p>
+            </div>
+            <span class="material-symbols-outlined text-secondary group-hover:text-white text-xl shrink-0">chevron_right</span>
+          </button>
+          <p class="text-sm text-on-surface-variant text-center mt-2.5 leading-relaxed">扫码关联后可实时查看亲友位置</p>
+        </div>
+
+      </main>
+    </div>
+
+    <!-- RESCUE -->
+    <div class="view flex-1 bg-surface-container" id="viewRescue">
+      <div class="flex-1 overflow-y-auto no-scrollbar px-4 py-4">
+        <div class="mb-4">
+          <h2 class="text-lg font-bold text-on-surface tracking-tight">上报救援请求</h2>
+          <p class="text-lg text-on-surface-variant mt-1 leading-relaxed">信息将同步至指挥终端与救生员端</p>
+        </div>
+        <form class="bg-white rounded-2xl p-4 card-shadow border border-outline-variant/60 space-y-4" id="rescueForm" onsubmit="submitRescue(event)">
+          <div>
+            <label class="block text-base font-bold text-on-surface-variant mb-1.5">遇险者称呼</label>
+            <input type="text" id="rName" required placeholder="例如：穿红色泳裤的男孩" class="w-full rounded-xl border-outline-variant bg-surface px-3.5 py-2.5 text-sm focus:border-primary focus:ring-primary">
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-base font-bold text-on-surface-variant mb-1.5">大致年龄</label>
+              <select id="rAge" required class="w-full rounded-xl border-outline-variant bg-surface px-2.5 py-2.5 text-sm focus:border-primary focus:ring-primary">
+                <option value="">请选择</option>
+                <option>儿童（12 岁以下）</option>
+                <option>青少年</option>
+                <option>成年人</option>
+                <option>老年人</option>
+                <option>不确定</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-base font-bold text-on-surface-variant mb-1.5">所在区域</label>
+              <select id="rZone" required class="w-full rounded-xl border-outline-variant bg-surface px-2.5 py-2.5 text-sm focus:border-primary focus:ring-primary">
+                <option value="">请选择</option>
+                <option>A-1 浅水区</option>
+                <option selected>B-2 浅水区</option>
+                <option>C 浪区</option>
+                <option>D-1 中水区</option>
+                <option>不确定</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label class="block text-base font-bold text-on-surface-variant mb-1.5">外貌特征 / 补充说明</label>
+            <textarea id="rDesc" rows="3" placeholder="泳装颜色、游泳圈、最后目击方向等" class="w-full rounded-xl border-outline-variant bg-surface px-3.5 py-2.5 text-sm focus:border-primary focus:ring-primary resize-none"></textarea>
+          </div>
+          <div>
+            <label class="block text-base font-bold text-on-surface-variant mb-1.5">您的等候位置</label>
+            <input type="text" id="rStation" value="B-2 东段救援站附近" required class="w-full rounded-xl border-outline-variant bg-surface px-3.5 py-2.5 text-sm focus:border-primary focus:ring-primary">
+          </div>
+          <button type="submit" id="rescueBtn" class="w-full h-11 bg-primary text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.98] shadow-md shadow-primary/20">
+            <span class="material-symbols-outlined text-xl">send</span> 发送救援请求
+          </button>
+          <div id="sentPanel" class="hidden p-3.5 bg-safe/10 rounded-xl border border-safe/20">
+            <p class="text-sm font-bold text-safe flex items-center gap-1.5"><span class="material-symbols-outlined text-xl">check_circle</span> 请求已发送</p>
+            <p class="text-xs text-on-surface-variant mt-1.5 leading-relaxed" id="sentText">指挥终端已收到报案，救生员 LG-05 正在响应。</p>
+            <div class="flex flex-wrap gap-1.5 mt-2">
+              <span class="text-sm font-semibold px-2 py-0.5 bg-white rounded-full border border-outline-variant text-on-surface-variant">指挥终端</span>
+              <span class="text-sm font-semibold px-2 py-0.5 bg-white rounded-full border border-outline-variant text-on-surface-variant">救生员端</span>
+              <span class="text-sm font-semibold px-2 py-0.5 bg-white rounded-full border border-outline-variant text-on-surface-variant" id="sentTask">任务 T-005</span>
+            </div>
+          </div>
+          <p class="text-base text-on-surface-variant text-center leading-relaxed">紧急情况请同时拨打 110</p>
+        </form>
+      </div>
+    </div>
+
+    <div class="home-indicator" aria-hidden="true"><span></span></div>
+    <div class="lumina-toast" id="toast"></div>
+
+    <!-- OVERLAYS -->
+    <div class="overlay" id="plusOverlay" onclick="closeIfBackdrop(event,'plusOverlay')">
+      <div class="sheet" onclick="event.stopPropagation()">
+        <div class="w-9 h-1 bg-outline-variant rounded-full mx-auto mb-4"></div>
+        <h3 class="text-3xl font-bold text-on-surface mb-1">添加关联</h3>
+        <p class="text-lg text-on-surface-variant mb-4 leading-relaxed">扫码或出示关联码，任意一方扫描即可建立双向关联</p>
+        <div class="space-y-2.5">
+          <button class="w-full flex items-center gap-3.5 p-3.5 rounded-2xl border border-outline-variant/60 bg-white active:bg-surface-container text-left" onclick="openScan()">
+            <div class="w-11 h-11 bg-primary/8 rounded-xl flex items-center justify-center text-primary shrink-0"><span class="material-symbols-outlined md">qr_code_scanner</span></div>
+            <div class="flex-1"><p class="font-bold text-sm">扫一扫</p><p class="text-xs text-on-surface-variant mt-0.5">扫描对方手机上的关联码</p></div>
+            <span class="material-symbols-outlined text-on-surface-variant md">chevron_right</span>
+          </button>
+          <button class="w-full flex items-center gap-3.5 p-3.5 rounded-2xl border border-outline-variant/60 bg-white active:bg-surface-container text-left" onclick="openMyCode()">
+            <div class="w-11 h-11 bg-secondary/12 rounded-xl flex items-center justify-center text-warning-dark shrink-0"><span class="material-symbols-outlined md">qr_code_2</span></div>
+            <div class="flex-1"><p class="font-bold text-sm">我的关联码</p><p class="text-xs text-on-surface-variant mt-0.5">让对方扫描您的二维码</p></div>
+            <span class="material-symbols-outlined text-on-surface-variant md">chevron_right</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="overlay" id="scanOverlay" onclick="closeIfBackdrop(event,'scanOverlay')">
+      <div class="sheet" onclick="event.stopPropagation()">
+        <div class="w-9 h-1 bg-outline-variant rounded-full mx-auto mb-4"></div>
+        <h3 class="text-3xl font-bold text-on-surface mb-1">扫一扫</h3>
+        <p class="text-lg text-on-surface-variant mb-4">将对方关联码放入框内即可建立关联</p>
+        <div class="relative aspect-square max-h-[240px] bg-[#0B1E33] rounded-2xl overflow-hidden mb-3">
+          <div class="absolute inset-4 border-2 border-white/25 rounded-xl"></div>
+          <div class="scan-line absolute left-4 right-4 h-0.5 bg-secondary shadow-[0_0_12px_#f79f47]"></div>
+        </div>
+        <button class="w-full py-2.5 border border-dashed border-outline-variant rounded-xl text-sm font-bold text-primary bg-surface-container active:scale-[0.98]" onclick="demoScan()">演示：扫描成功</button>
+      </div>
+    </div>
+
+    <div class="overlay" id="codeOverlay" onclick="closeIfBackdrop(event,'codeOverlay')">
+      <div class="sheet" onclick="event.stopPropagation()">
+        <div class="w-9 h-1 bg-outline-variant rounded-full mx-auto mb-4"></div>
+        <h3 class="text-3xl font-bold text-on-surface mb-1">我的关联码</h3>
+        <p class="text-lg text-on-surface-variant mb-3">请让对方打开「扫一扫」扫描此码</p>
+        <p class="text-center text-lg font-bold text-primary tracking-[2px] mb-3" id="myCodeId">AG-7K2M9P</p>
+        <div class="w-[168px] h-[168px] mx-auto mb-4 bg-white border border-outline-variant rounded-2xl p-3"><div class="qr-grid" id="qrGrid"></div></div>
+        <button class="w-full h-11 bg-primary text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.98] shadow-md shadow-primary/20" onclick="copyCode()">
+          <span class="material-symbols-outlined text-xl">content_copy</span> 复制关联码
+        </button>
+      </div>
+    </div>
+
+    <div class="overlay center" id="successOverlay" onclick="closeIfBackdrop(event,'successOverlay')">
+      <div class="dialog bg-white rounded-2xl p-6 text-center w-[88%] card-shadow" onclick="event.stopPropagation()">
+        <div class="w-12 h-12 bg-safe/10 rounded-full flex items-center justify-center mx-auto mb-3">
+          <span class="material-symbols-outlined text-safe text-3xl">check</span>
+        </div>
+        <h3 class="text-3xl font-bold text-on-surface mb-1.5" id="successTitle">关联成功</h3>
+        <p class="text-lg text-on-surface-variant leading-relaxed mb-4" id="successMsg">已与小华建立双向关联，可实时查看彼此位置。</p>
+        <button class="w-full h-11 bg-primary text-white rounded-xl font-bold text-sm active:scale-[0.98]" onclick="closeOverlay('successOverlay')">知道了</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const assocData = {
+  1: { name:'小明', age:'儿童（12 岁以下）', band:'A-2213', zone:'B-2 浅水区中段 · 浪区边缘', dist:'85米' },
+  2: { name:'李阿姨', age:'老年人', band:'A-3318', zone:'B-2 浅水区 · 您附近', dist:'12米' }
+};
+const mapConfigs = {
+  1: { me:[21.40055,109.15435], them:[21.40115,109.15525], zoom:17, pulse:true },
+  2: { me:[21.40050,109.15445], them:[21.40058,109.15452], zoom:18, pulse:false },
+  3: { me:[21.40055,109.15435], them:[21.40135,109.15555], zoom:17, pulse:true }
+};
+const miniMaps = {};
+
+function makePin(cls){
+  return L.divIcon({ className:'', html:`<div class="${cls}"></div>`, iconSize:[12,12], iconAnchor:[6,6] });
+}
+function initMiniMap(id, cfg){
+  const el = document.getElementById(id);
+  if(!el || miniMaps[id] || typeof L === 'undefined') return;
+  const map = L.map(id, {
+    center:[(cfg.me[0]+cfg.them[0])/2,(cfg.me[1]+cfg.them[1])/2],
+    zoom:cfg.zoom||17, zoomControl:false, attributionControl:false,
+    dragging:false, scrollWheelZoom:false, doubleClickZoom:false, touchZoom:false, boxZoom:false, keyboard:false
+  });
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom:19 }).addTo(map);
+  L.marker(cfg.me, { icon:makePin('map-pin-me') }).addTo(map);
+  L.marker(cfg.them, { icon:makePin(cfg.pulse ? 'map-pin-them pulse' : 'map-pin-them') }).addTo(map);
+  L.polyline([cfg.me,cfg.them], { color:'#182e7d', weight:2, opacity:0.5, dashArray:'5 5' }).addTo(map);
+  map.fitBounds(L.latLngBounds([cfg.me,cfg.them]), { padding:[22,22] });
+  miniMaps[id] = map;
+  setTimeout(()=>map.invalidateSize(), 100);
+}
+function viewOnMap(id){
+  const d = assocData[id];
+  if(d) showToast(`正在查看 ${d.name} · ${d.zone}`);
+  const m = miniMaps['map-'+id];
+  if(m){ m.setView(mapConfigs[id].them, mapConfigs[id].zoom+1, { animate:true }); setTimeout(()=>m.fitBounds(L.latLngBounds([mapConfigs[id].me,mapConfigs[id].them]), { padding:[22,22] }), 1600); }
+}
+
+document.getElementById('btnPlus').onclick = () => openOverlay('plusOverlay');
+document.getElementById('btnBack').onclick = () => goHome();
+
+function openRescuePage(prefill){
+  if(prefill){
+    document.getElementById('rName').value = prefill.name || '';
+    document.getElementById('rAge').value = prefill.age || '';
+    document.getElementById('rZone').value = prefill.zone || 'B-2 浅水区';
+    document.getElementById('rDesc').value = prefill.desc || '';
+  } else {
+    document.getElementById('rescueForm').reset();
+    document.getElementById('rStation').value = 'B-2 东段救援站附近';
+    document.getElementById('sentPanel').classList.add('hidden');
+    const btn = document.getElementById('rescueBtn');
+    btn.disabled = false;
+    btn.innerHTML = '<span class="material-symbols-outlined text-xl">send</span> 发送救援请求';
+  }
+  document.getElementById('viewHome').classList.remove('active');
+  document.getElementById('viewRescue').classList.add('active');
+  document.getElementById('btnBack').classList.replace('hidden','flex');
+  document.getElementById('btnPlus').classList.add('hidden');
+  document.getElementById('hdrTag').textContent = 'Rescue Report';
+}
+function openRescueForAssoc(id){
+  const d = assocData[id];
+  if(!d) return;
+  openRescuePage({ name:d.name, age:d.age, zone:'B-2 浅水区', desc:`关联游客 · 手环 ${d.band} · ${d.zone} · 相距 ${d.dist}` });
+}
+function goHome(){
+  document.getElementById('viewRescue').classList.remove('active');
+  document.getElementById('viewHome').classList.add('active');
+  document.getElementById('btnBack').classList.replace('flex','hidden');
+  document.getElementById('btnPlus').classList.remove('hidden');
+  document.getElementById('hdrTag').textContent = 'Safety Monitor';
+}
+function openOverlay(id){ document.getElementById(id).classList.add('show'); }
+function closeOverlay(id){ document.getElementById(id).classList.remove('show'); }
+function closeIfBackdrop(e,id){ if(e.target.id===id) closeOverlay(id); }
+function openScan(){ closeOverlay('plusOverlay'); setTimeout(()=>openOverlay('scanOverlay'),160); }
+function openMyCode(){ closeOverlay('plusOverlay'); setTimeout(()=>openOverlay('codeOverlay'),160); }
+
+function submitRescue(e){
+  e.preventDefault();
+  const name = document.getElementById('rName').value.trim();
+  const age = document.getElementById('rAge').value;
+  const zone = document.getElementById('rZone').value;
+  const station = document.getElementById('rStation').value.trim();
+  if(!name||!age||!zone||!station) return;
+  const taskId = 'T-' + String(Math.floor(Math.random()*900)+100);
+  document.getElementById('sentTask').textContent = '任务 ' + taskId;
+  document.getElementById('sentText').textContent = `「${name}」· ${age} · ${zone} 已推送至指挥终端与救生员端。`;
+  document.getElementById('sentPanel').classList.remove('hidden');
+  const btn = document.getElementById('rescueBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="material-symbols-outlined text-xl">check_circle</span> 已发送';
+  showToast('救援请求已发送');
+}
+
+function demoScan(){
+  closeOverlay('scanOverlay');
+  document.getElementById('successTitle').textContent = '关联成功';
+  document.getElementById('successMsg').textContent = '已与小华建立双向关联，可实时查看彼此位置。';
+  setTimeout(()=>openOverlay('successOverlay'),200);
+  const list = document.getElementById('assocList');
+  const card = document.createElement('article');
+  card.className = 'bg-white rounded-2xl p-4 flex flex-col gap-3.5 card-shadow border border-secondary/30';
+  card.dataset.id = '3';
+  card.innerHTML = `
+    <div class="flex items-start justify-between gap-3">
+      <div class="flex items-center gap-3 min-w-0">
+        <div class="relative shrink-0">
+          <div class="w-11 h-11 bg-surface rounded-xl flex items-center justify-center text-primary font-bold text-sm border border-primary/10">XH</div>
+          <div class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-secondary border-2 border-white rounded-full"></div>
+        </div>
+        <div class="min-w-0"><h3 class="font-bold text-2xl">小华</h3><p class="text-base text-on-surface-variant mt-0.5">手环 A-4421 · 28 岁 · 朋友</p></div>
+      </div>
+      <span class="ac-badge shrink-0 px-2 py-1 bg-secondary/12 text-warning-dark rounded-lg text-sm font-bold">需关注</span>
+    </div>
+    <div class="mini-map-wrap">
+      <div class="mini-map" id="map-3"></div>
+      <div class="absolute inset-0 map-gradient"></div>
+      <div class="absolute top-2 left-2 px-2 py-0.5 bg-white/92 backdrop-blur-sm rounded-md text-xs font-semibold text-on-surface-variant z-[500]">北海银滩 · B-2</div>
+      <div class="absolute bottom-2.5 right-2.5 px-2.5 py-1 bg-white/92 backdrop-blur-sm rounded-full text-primary font-bold text-sm z-[500]">距离 120 米</div>
+    </div>
+    <div class="flex gap-2.5">
+      <button class="flex-[1.6] h-10 bg-primary text-white rounded-xl font-semibold text-lg flex items-center justify-center gap-1.5" onclick="openRescueForAssoc(3)"><span class="material-symbols-outlined text-3xl">report</span> 上报求助</button>
+      <button class="flex-1 h-10 border border-primary/15 text-primary rounded-xl font-semibold text-lg flex items-center justify-center gap-1 bg-white" onclick="viewOnMap(3)"><span class="material-symbols-outlined text-3xl">near_me</span> 查看</button>
+    </div>`;
+  list.appendChild(card);
+  assocData[3] = { name:'小华', age:'成年人', band:'A-4421', zone:'B-2 东段 · 救援站方向', dist:'120米' };
+  document.getElementById('assocCount').textContent = '(3)';
+  setTimeout(()=>initMiniMap('map-3', mapConfigs[3]), 120);
+}
+
+function copyCode(){
+  const code = document.getElementById('myCodeId').textContent;
+  navigator.clipboard?.writeText(code).then(()=>showToast('关联码已复制')).catch(()=>showToast(code));
+}
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._tm); t._tm = setTimeout(()=>t.classList.remove('show'), 2200);
+}
+(function buildQR(){
+  const grid = document.getElementById('qrGrid');
+  [1,1,1,1,1,1,1,0,1,1,0,0,0,0,0,1,0,1,1,0,1,1,1,0,1,0,0,1,0,1,1,1,0,1,0,1,1,0,1,1,1,0,1,0,1,1,0,0,0,0,0,1,0,1,1,1,1,1,1,1,0,1,0,0,0,0,0,0,0,0,1,1,1,0,1,0,1,1,0,1].forEach(v=>{
+    const c = document.createElement('div'); c.className = 'qr-cell' + (v?'':' w'); grid.appendChild(c);
+  });
+  initMiniMap('map-1', mapConfigs[1]);
+  initMiniMap('map-2', mapConfigs[2]);
+})();
+</script>
+<script src="vendor/lucide.min.js"></script>
+<script src="aquaguard-icons.js"></script>
+</body>
+</html>

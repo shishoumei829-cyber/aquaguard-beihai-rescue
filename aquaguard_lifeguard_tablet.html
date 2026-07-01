@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="station-app">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AquaGuard Watch · 哨塔片区信息站</title>
+<link rel="stylesheet" href="aquaguard-lumina.css">
+<link rel="stylesheet" href="aquaguard-glass-pages.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="aquaguard-field-map.js"></script>
+</head>
+<body>
+<div class="page">
+  <header class="topbar glass-bar">
+    <div class="brand">
+      <div class="brand-mark"><span class="material-symbols-outlined">waves</span></div>
+      <div class="brand-title">
+        <strong class="one-line">北海救援指挥系统</strong>
+        <span class="one-line">AquaGuard Command</span>
+      </div>
+    </div>
+    <div class="top-actions">
+      <span class="pill green"><span class="dot"></span>值班中</span>
+      <span class="pill red" id="pendingPill">待处理 2</span>
+      <span class="pill">B-3 重点区</span>
+      <button class="icon-btn" type="button" onclick="openCallModal()" aria-label="呼叫"><span class="material-symbols-outlined">call</span></button>
+      <span class="clock" id="tclock">14:37:22</span>
+    </div>
+  </header>
+
+  <main class="station-grid">
+    <aside class="panel glass-panel">
+      <div class="panel-head">
+        <h2 class="one-line">本区求救队列</h2>
+        <span class="pill red" id="queueBadge">2 待处理</span>
+      </div>
+      <div class="queue-list" id="queueList"></div>
+      <div class="operator-card">
+        <div style="display:flex;align-items:center;gap:12px;min-width:0;">
+          <div class="avatar">LG</div>
+          <div style="min-width:0;">
+            <div class="one-line" style="font-weight:900;color:var(--primary);" id="dutyPerson">黄晓明 LG-03</div>
+            <div class="one-line muted" style="font-size:11px;">区域 B-T02 · 信息站</div>
+          </div>
+        </div>
+        <div class="duty-toggle">
+          <button class="btn primary" id="btnOnDuty" type="button" onclick="setDuty('on')">值班中</button>
+          <button class="btn secondary" id="btnAway" type="button" onclick="setDuty('away')">已离岗</button>
+        </div>
+      </div>
+    </aside>
+
+    <section class="center-col">
+      <div class="sos-banner" id="sosBanner">
+        <div style="display:flex;align-items:center;gap:16px;min-width:0;">
+          <div class="sos-icon"><span class="material-symbols-outlined">warning</span></div>
+          <div style="min-width:0;">
+            <h2 class="one-line" id="bannerTitle">A-2213 · 儿童 · 7岁</h2>
+            <p class="one-line" id="bannerSub">连续多击 · 手动求救 · 生命体征异常</p>
+          </div>
+        </div>
+        <div style="text-align:right;">
+          <div class="sos-bear one-line" id="bannerBear">254°</div>
+          <div class="tiny" style="opacity:.66;">当前方位</div>
+        </div>
+      </div>
+      <div class="station-map-card" id="navMapWrap">
+        <div class="field-map" id="towerMap"></div>
+        <div class="compass-data">
+          <span class="tiny">距离方位</span>
+          <h3 id="mapDist">383<small>m</small></h3>
+          <div class="compass-meta">
+            <div><span>方位</span><strong id="mapBearing">254°</strong></div>
+            <div><span>区域</span><strong id="mapZone">B-3</strong></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="panel glass-panel detail">
+      <span class="eyebrow one-line">当前选中求救</span>
+      <h1 class="one-line" id="detId">A-2213</h1>
+      <div class="detail-sub one-line" id="detPerson">儿童 · 7岁 · 手环 SOS</div>
+      <div class="info-grid">
+        <div class="info-card"><span>实时心率</span><strong class="red" id="detHr">142</strong></div>
+        <div class="info-card"><span>所在区域</span><strong id="detLoc">B-3</strong></div>
+        <div class="info-card"><span>触发时间</span><strong id="detTime">14:37</strong></div>
+        <div class="info-card"><span>当前状态</span><strong class="orange" id="detDispatch">待同步</strong></div>
+      </div>
+      <div class="notice orange"><span class="material-symbols-outlined">info</span><div>哨塔地图用于确认目标方位、海岸路线与风险水域，救生员离塔后同步到移动端导航。</div></div>
+      <div class="actions">
+        <button class="btn primary" id="syncBtn" type="button" onclick="syncToPhone()"><span class="material-symbols-outlined">sync</span>同步至出动手机</button>
+        <button class="btn secondary" type="button" onclick="openCallModal()"><span class="material-symbols-outlined">call</span>呼叫指挥终端</button>
+        <button class="btn orange" type="button" onclick="openVoiceModal()"><span class="material-symbols-outlined">record_voice_over</span>向手表发送语音</button>
+      </div>
+      <div class="demo-foot">
+        <button type="button" onclick="simulateSOS()">模拟 SOS</button>
+        <button type="button" onclick="window.open('aquaguard_lifeguard_phone.html','_blank')">打开出动手机</button>
+        <button type="button" onclick="window.open('aquaguard_v3_full.html','_blank')">指挥终端</button>
+      </div>
+    </aside>
+  </main>
+</div>
+
+<div class="overlay" id="callOverlay" style="position:fixed;inset:0;background:rgba(15,26,74,.4);z-index:300;display:none;align-items:center;justify-content:center;" onclick="if(event.target===this)closeCallModal()">
+  <div style="width:360px;background:#fff;border-radius:24px;padding:18px;box-shadow:var(--shadow);">
+    <button type="button" onclick="closeCallModal()" style="float:right;border:none;background:#eceef6;width:26px;height:26px;border-radius:50%;cursor:pointer;">×</button>
+    <h3 style="font-size:18px;font-weight:900;color:var(--primary);margin-bottom:10px;">呼叫指挥终端</h3>
+    <div style="font-size:13px;color:var(--muted);padding:8px;background:#f8f9fa;border-radius:12px;margin-bottom:12px;">目标：<b>北海银滩救援指挥席</b></div>
+    <div id="callStatus" style="text-align:center;font-weight:700;margin:10px 0;">点击下方按钮发起通话</div>
+    <div id="callTimer" style="text-align:center;font-family:monospace;font-size:20px;color:var(--primary);margin-bottom:12px;"></div>
+    <button class="btn primary" id="callBtn" type="button" onclick="toggleCall()">发起通话</button>
+  </div>
+</div>
+<div class="overlay" id="voiceOverlay" style="position:fixed;inset:0;background:rgba(15,26,74,.4);z-index:300;display:none;align-items:center;justify-content:center;" onclick="if(event.target===this)closeVoiceModal()">
+  <div style="width:360px;background:#fff;border-radius:24px;padding:18px;box-shadow:var(--shadow);">
+    <button type="button" onclick="closeVoiceModal()" style="float:right;border:none;background:#eceef6;width:26px;height:26px;border-radius:50%;cursor:pointer;">×</button>
+    <h3 style="font-size:18px;font-weight:900;color:var(--primary);margin-bottom:10px;">向手表发送语音</h3>
+    <div style="font-size:13px;color:var(--muted);padding:8px;background:#f8f9fa;border-radius:12px;margin-bottom:12px;">推送至：<b id="voiceBand">A-2213</b></div>
+    <div id="voiceTpls" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px;"></div>
+    <textarea id="voiceText" rows="3" placeholder="输入语音内容…" style="width:100%;border:1px solid #e2e4ed;border-radius:12px;padding:8px;font-family:inherit;margin-bottom:8px;"></textarea>
+    <button class="btn primary" type="button" onclick="sendVoice()">发送语音</button>
+  </div>
+</div>
+<div class="lumina-toast" id="toast"></div>
+
+<script>
+const SYNC_KEY='aquaguard_field_sync';
+const TOWER={id:'B-T02',cx:468,cy:178,zone:'B-2'};
+const VOICE_TPLS=['救生员正在赶来，请保持冷静','请挥动一只手让我们看到您','救援已出发，请抓住浮标等待'];
+const {distM,bearing}=AquaGuardMap;
+let towerMapCtx=null, dutyMode='on', activeId='sos-1', callState='idle', callIv=null, callSec=0;
+let alerts=[
+  {id:'sos-1',band:'A-2213',person:'儿童 · 7岁',risk:'emg',hr:142,zone:'B-3',cx:335,cy:215,time:'14:37',trigger:'连续多击 · 手动求救',status:'wait',synced:false,dispatch:'wait'},
+  {id:'sos-2',band:'A-2204',person:'儿童 · 6岁',risk:'alert',hr:118,zone:'B-2',cx:262,cy:228,time:'14:31',trigger:'心率升高 + 越界',status:'wait',synced:false,dispatch:'wait'},
+];
+function getActive(){return alerts.find(a=>a.id===activeId);}
+function riskLabel(r){return r==='emg'?'紧急':'警戒';}
+function dispatchLabel(d){return ({wait:'待同步',synced:'已同步手机',enroute:'LG-03 途中',onsite:'现场处置',done:'已完成'}[d]||d);}
+
+function updateNavMap(){
+  const a=getActive(), wrap=document.getElementById('navMapWrap');
+  if(!towerMapCtx)return;
+  const pending=alerts.filter(x=>x.status!=='done'&&(!a||x.id!==a.id));
+  if(!a||a.status==='done'){
+    wrap.classList.add('nav-map-idle');
+    document.getElementById('mapDist').innerHTML='—<small>m</small>';
+    document.getElementById('mapBearing').textContent='—°';
+    document.getElementById('mapZone').textContent='—';
+    document.getElementById('sosBanner').classList.remove('show');
+    AquaGuardMap.update(towerMapCtx,{active:pending.length>0,origin:TOWER,originClass:'nav-marker-tower',extras:pending.map(x=>({cx:x.cx,cy:x.cy,className:'nav-marker-target'+(x.risk==='alert'?' alert':'')})),padding:[56,56],maxZoom:17,idleZoom:16});
+    return;
+  }
+  wrap.classList.remove('nav-map-idle');
+  const stats=AquaGuardMap.update(towerMapCtx,{active:true,origin:TOWER,originClass:'nav-marker-tower',target:{cx:a.cx,cy:a.cy,risk:a.risk},extras:pending.map(x=>({cx:x.cx,cy:x.cy,className:'nav-marker-target'+(x.risk==='alert'?' alert':'')})),padding:[56,56],maxZoom:18});
+  if(!stats)return;
+  document.getElementById('mapDist').innerHTML=`${stats.dist}<small>m</small>`;
+  document.getElementById('mapBearing').textContent=stats.bear+'°';
+  document.getElementById('mapZone').textContent=a.zone;
+  document.getElementById('bannerTitle').textContent=`${a.band} · ${a.person}`;
+  document.getElementById('bannerSub').textContent=a.trigger+(dutyMode==='away'?' · 本站无人值守续播':'');
+  document.getElementById('bannerBear').textContent=stats.bear+'°';
+  document.getElementById('sosBanner').classList.toggle('show', a.risk==='emg');
+}
+
+function renderQueue(){
+  const pending=alerts.filter(a=>a.status!=='done');
+  document.getElementById('queueBadge').textContent=pending.length+' 待处理';
+  document.getElementById('pendingPill').textContent='待处理 '+pending.length;
+  document.getElementById('queueList').innerHTML=alerts.map(a=>{
+    const dist=distM(TOWER.cx,TOWER.cy,a.cx,a.cy);
+    const bear=bearing(TOWER.cx,TOWER.cy,a.cx,a.cy);
+    return `<article class="task-card ${a.risk==='emg'?'danger':''}${a.id===activeId?' on':''}" onclick="selectAlert('${a.id}')">
+      <div class="task-top"><span class="badge ${a.risk==='emg'?'red':'orange'}">${riskLabel(a.risk)}</span><span class="tiny muted">${a.time}</span></div>
+      <h3 class="one-line">${a.band}</h3>
+      <div class="task-meta one-line">${a.person} · ${a.zone} · 手环 SOS</div>
+      <div class="task-foot"><span>${bear}°</span><span>${dist}m</span></div>
+    </article>`;
+  }).join('');
+}
+
+function updateDetail(){
+  const a=getActive(); if(!a)return;
+  document.getElementById('detId').textContent=a.band;
+  document.getElementById('detPerson').textContent=a.person+' · 手环 SOS';
+  document.getElementById('detHr').textContent=a.hr;
+  document.getElementById('detLoc').textContent=a.zone;
+  document.getElementById('detTime').textContent=a.time;
+  document.getElementById('detDispatch').textContent=dispatchLabel(a.dispatch);
+  document.getElementById('voiceBand').textContent=a.band;
+  const btn=document.getElementById('syncBtn');
+  btn.innerHTML='<span class="material-symbols-outlined">sync</span>'+(a.synced?'已同步至手机':'同步至出动手机');
+  btn.disabled=a.synced&&a.dispatch!=='wait';
+}
+
+function selectAlert(id){activeId=id;updateAll();}
+function setDuty(mode){
+  dutyMode=mode;
+  document.getElementById('btnOnDuty').className='btn '+(mode==='on'?'primary':'secondary');
+  document.getElementById('btnAway').className='btn '+(mode==='away'?'primary':'secondary');
+  document.getElementById('dutyPerson').textContent=mode==='on'?'黄晓明 LG-03':'值班员已离塔 · 信息站续播';
+  updateNavMap();
+}
+function syncToPhone(){
+  const a=getActive(); if(!a||a.status==='done')return;
+  a.synced=true; a.dispatch='synced';
+  localStorage.setItem(SYNC_KEY,JSON.stringify({type:'handoff',alert:a,guard:{id:'LG-03',name:'黄晓明'},tower:TOWER.id,ts:Date.now()}));
+  showToast('已推送至手机 · 救生员可在手机上接手并出发');
+  updateAll();
+}
+function simulateSOS(){
+  const id='sos-'+Date.now();
+  const pos=[{cx:380,cy:222,zone:'B-3'},{cx:290,cy:218,zone:'B-2'}][alerts.length%2];
+  alerts.unshift({id,band:'A-22'+Math.floor(Math.random()*90+10),person:'儿童 · 6岁',risk:'emg',hr:138,zone:pos.zone,cx:pos.cx,cy:pos.cy,time:new Date().toTimeString().slice(0,5),trigger:'新手环 SOS',status:'wait',synced:false,dispatch:'wait'});
+  activeId=id; showToast('收到新手环 SOS'); updateAll();
+}
+function updateAll(){updateNavMap();renderQueue();updateDetail();}
+
+window.addEventListener('storage',e=>{
+  if(e.key!==SYNC_KEY||!e.newValue)return;
+  try{
+    const d=JSON.parse(e.newValue);
+    if(d.type==='status'&&d.alertId){
+      const a=alerts.find(x=>x.id===d.alertId);
+      if(a){a.dispatch=d.dispatch;if(d.dispatch==='enroute')a.status='enroute';if(d.dispatch==='onsite')a.status='onsite';if(d.dispatch==='done')a.status='done';}
+      updateAll();
+    }
+  }catch(err){}
+});
+
+function openCallModal(){document.getElementById('callOverlay').style.display='flex';}
+function closeCallModal(){document.getElementById('callOverlay').style.display='none';if(callState==='live')endCall();}
+function toggleCall(){callState==='idle'?startCall():endCall();}
+function startCall(){
+  callState='ringing';
+  document.getElementById('callStatus').textContent='正在呼叫…';
+  document.getElementById('callBtn').textContent='取消';
+  setTimeout(()=>{
+    if(callState!=='ringing')return;
+    callState='live';
+    document.getElementById('callStatus').textContent='通话中';
+    document.getElementById('callBtn').textContent='挂断';
+    callSec=0; callIv=setInterval(()=>{callSec++;document.getElementById('callTimer').textContent=String(Math.floor(callSec/60)).padStart(2,'0')+':'+String(callSec%60).padStart(2,'0');},1000);
+  },1800);
+}
+function endCall(){clearInterval(callIv);callState='idle';document.getElementById('callStatus').textContent='通话结束';document.getElementById('callTimer').textContent='';document.getElementById('callBtn').textContent='发起通话';}
+function openVoiceModal(){document.getElementById('voiceOverlay').style.display='flex';document.getElementById('voiceTpls').innerHTML=VOICE_TPLS.map(t=>`<button type="button" style="padding:5px 8px;border:1px solid #e2e4ed;border-radius:10px;background:#f8f9fa;font-size:11px;cursor:pointer;font-family:inherit;" onclick="document.getElementById('voiceText').value='${t}'">${t.slice(0,12)}…</button>`).join('');}
+function closeVoiceModal(){document.getElementById('voiceOverlay').style.display='none';}
+function sendVoice(){showToast('语音已发送至 '+document.getElementById('voiceBand').textContent);closeVoiceModal();}
+function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2600);}
+
+setInterval(()=>{document.getElementById('tclock').textContent=new Date().toTimeString().slice(0,8);},1000);
+towerMapCtx=AquaGuardMap.init('towerMap',{dragging:true,touchZoom:true,scrollWheelZoom:true});
+towerMapCtx.invalidate();
+setTimeout(function(){towerMapCtx.invalidate();updateNavMap();},300);
+updateAll();
+</script>
+<script src="vendor/lucide.min.js"></script>
+<script src="aquaguard-icons.js"></script>
+</body>
+</html>

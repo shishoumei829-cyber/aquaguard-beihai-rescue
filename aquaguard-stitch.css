@@ -1,0 +1,275 @@
+:root {
+  --aq-navy-950: #071331;
+  --aq-navy-900: #0c1f54;
+  --aq-navy-800: #182e7d;
+  --aq-blue-100: #e8edff;
+  --aq-orange-500: #f79f47;
+  --aq-orange-100: #fff1e3;
+  --aq-ink: #11182b;
+  --aq-muted: #69738d;
+  --aq-line: #dfe4ef;
+  --aq-canvas: #f3f6fa;
+  --aq-glass: rgba(255, 255, 255, 0.82);
+  --aq-shadow: 0 18px 48px rgba(11, 27, 69, 0.12);
+  --aq-shadow-soft: 0 8px 24px rgba(11, 27, 69, 0.08);
+}
+
+svg[data-lucide], svg[data-aq-icon] {
+  width: 1em;
+  height: 1em;
+  display: inline-block;
+  flex: 0 0 auto;
+  vertical-align: -0.14em;
+  color: currentColor;
+}
+
+button svg, a svg { pointer-events: none; }
+
+/* Command center: preserve the operational density while adopting the Stitch shell. */
+.command-center body {
+  padding: 20px;
+  color: var(--aq-ink);
+  background:
+    linear-gradient(rgba(24, 46, 125, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(24, 46, 125, 0.035) 1px, transparent 1px),
+    var(--aq-canvas);
+  background-size: 32px 32px;
+}
+
+.command-center .app {
+  max-width: 1560px !important;
+  height: min(900px, 95vh) !important;
+  border: 1px solid rgba(255, 255, 255, 0.9) !important;
+  border-radius: 32px !important;
+  background: rgba(248, 250, 253, 0.92) !important;
+  box-shadow: var(--aq-shadow) !important;
+}
+
+.command-center .top {
+  height: 70px !important;
+  margin: 12px 12px 0 !important;
+  padding: 0 22px !important;
+  border: 1px solid rgba(255, 255, 255, 0.95) !important;
+  border-radius: 22px !important;
+  color: var(--aq-navy-800) !important;
+  background: rgba(255, 255, 255, 0.88) !important;
+  backdrop-filter: blur(24px) saturate(1.25);
+  box-shadow: var(--aq-shadow-soft) !important;
+}
+
+.command-center .logo {
+  color: #fff !important;
+  background: var(--aq-navy-800) !important;
+  border-radius: 10px !important;
+  border: none !important;
+}
+
+.command-center .brand,
+.command-center .tenv-i b,
+.command-center .tsn { color: var(--aq-navy-800) !important; }
+.command-center .brand-sub,
+.command-center .tloc,
+.command-center .tenv-i,
+.command-center .tsl,
+.command-center .ttime { color: var(--aq-muted) !important; }
+.command-center .tsep { background: var(--aq-line) !important; }
+
+.command-center .body {
+  gap: 12px;
+  padding: 12px;
+}
+
+.command-center .left,
+.command-center .right {
+  border: 1px solid rgba(255, 255, 255, 0.9) !important;
+  border-radius: 20px !important;
+  background: var(--aq-glass) !important;
+  backdrop-filter: blur(24px);
+  box-shadow: var(--aq-shadow-soft);
+  overflow: hidden;
+}
+.command-center .left { width: 252px !important; }
+.command-center .right { width: 300px !important; }
+
+.command-center .center {
+  border-radius: 22px;
+  overflow: hidden;
+  background: #d9e7ef;
+  box-shadow: inset 0 0 0 1px rgba(24, 46, 125, 0.08);
+}
+
+.command-center .ph,
+.command-center .ev-divider,
+.command-center .rhead,
+.command-center .sbar {
+  background: rgba(244, 247, 252, 0.9) !important;
+  border-color: var(--aq-line) !important;
+}
+
+.command-center .ev,
+.command-center .gitem,
+.command-center .qi,
+.command-center .cand-item {
+  margin: 4px 7px;
+  border-radius: 10px !important;
+}
+
+.command-center .ev.on,
+.command-center .ev.urgent {
+  background: var(--aq-orange-100) !important;
+  border-left-color: var(--aq-orange-500) !important;
+}
+
+.command-center .layer-bar,
+.command-center .map-callout,
+.command-center .chart-hud,
+.command-center .chart-ctx {
+  background: rgba(255, 255, 255, 0.45) !important;
+  backdrop-filter: blur(72px) saturate(1.9) contrast(1.04) !important;
+  -webkit-backdrop-filter: blur(72px) saturate(1.9) contrast(1.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.68) !important;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.085), inset 0 1px 1px rgba(255, 255, 255, 0.94) !important;
+}
+
+/* 修复 chart-hud 文字在浅色毛玻璃下看不清的问题 */
+.command-center .chart-hud {
+  color: #182E7D !important;
+}
+.command-center .chart-hud b {
+  color: #001760 !important;
+}
+.command-center .chart-hud span {
+  color: #6F7482 !important;
+}
+
+/* Tablet: the updated workstation uses a white command rail and a deep instrument field. */
+.field-tablet body.device-preview { background: #e9edf4; }
+.field-tablet .tablet-shell { max-width: 1240px; padding: 12px; border-radius: 30px; }
+.field-tablet .tablet-shell .device { border-radius: 20px; background: var(--aq-canvas); }
+.field-tablet .top {
+  height: 68px;
+  margin: 12px;
+  padding: 0 18px;
+  color: var(--aq-navy-800);
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid #fff;
+  border-radius: 18px;
+  box-shadow: var(--aq-shadow-soft);
+}
+.field-tablet .top-title { color: var(--aq-navy-800); font-size: 16px; }
+.field-tablet .top-sub, .field-tablet .tclock { color: var(--aq-muted); }
+.field-tablet .top-logo { color: #fff; background: var(--aq-navy-800); }
+.field-tablet .body { gap: 12px; padding: 0 12px 12px; }
+
+/* 平板端玻璃化升级 */
+.field-tablet .col-left,
+.field-tablet .col-right,
+.field-tablet .q-card,
+.field-tablet .det-cell,
+.field-tablet .duty-panel,
+.field-tablet .comm-btn,
+.field-tablet .sync-block {
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.30) 0%, rgba(255,255,255,.095) 48%, rgba(255,255,255,.20) 100%),
+    radial-gradient(circle at 12% 8%, rgba(255,255,255,.86), transparent 26%),
+    radial-gradient(circle at 86% 86%, rgba(100,149,182,.24), transparent 36%) !important;
+  background-color: rgba(255,255,255,.13) !important;
+  backdrop-filter: blur(86px) saturate(1.95) contrast(1.06) !important;
+  -webkit-backdrop-filter: blur(86px) saturate(1.95) contrast(1.06) !important;
+  border: 1px solid rgba(255,255,255,.66) !important;
+  box-shadow:
+    0 24px 62px rgba(24,46,125,.14),
+    0 8px 22px rgba(0,0,0,.06),
+    inset 0 1px 1px rgba(255,255,255,.92),
+    inset 0 -1px 0 rgba(255,255,255,.18) !important;
+}
+
+.field-tablet .col-left { width: 270px; }
+.field-tablet .col-right { width: 310px; }
+.field-tablet .col-center {
+  border-radius: 18px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 55%, rgba(116, 140, 224, 0.34), transparent 38%),
+    linear-gradient(145deg, #1c398f, #0e235f 76%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+.field-tablet .foot { margin: 0 12px 10px; border-radius: 12px; border: 1px solid #fff; }
+
+/* Field phone: large readable instrumentation and a single-column rescue loop. */
+.field-phone body.device-preview,
+.tourist-app body.device-preview { background: #e9edf4; }
+.field-phone .phone-shell,
+.tourist-app .phone-shell {
+  width: min(404px, calc(100vw - 24px));
+  max-width: 404px;
+}
+.field-phone .device,
+.tourist-app .device { background: var(--aq-canvas); }
+.field-phone .top,
+.tourist-app .app-header {
+  margin: 10px;
+  border: 1px solid #fff;
+  border-radius: 18px;
+  color: var(--aq-navy-800);
+  background: rgba(255, 255, 255, 0.9) !important;
+  backdrop-filter: blur(24px);
+  box-shadow: var(--aq-shadow-soft);
+}
+.field-phone .top-title,
+.field-phone .top-sub,
+.field-phone .tclock { color: var(--aq-navy-800); }
+.field-phone .top-sub { opacity: 0.55; }
+.field-phone .nav-map-wrap.phone {
+  margin: 0 10px 10px;
+  border-radius: 22px;
+  overflow: hidden;
+  min-height: 230px;
+  background:
+    radial-gradient(circle at 50% 48%, rgba(130, 153, 230, 0.24), transparent 42%),
+    #f8fafc;
+  box-shadow: var(--aq-shadow-soft);
+}
+
+/* 手机端与游客端玻璃化升级 */
+.field-phone .task-card,
+.field-phone .queue-card,
+.field-phone .status-card,
+.field-phone .sc-card,
+.field-phone .sc-cell,
+.field-phone .comm-btn,
+.tourist-app article,
+.tourist-app form,
+.tourist-app .sheet,
+.tourist-app .dialog {
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.30) 0%, rgba(255,255,255,.095) 48%, rgba(255,255,255,.20) 100%),
+    radial-gradient(circle at 12% 8%, rgba(255,255,255,.86), transparent 26%),
+    radial-gradient(circle at 86% 86%, rgba(100,149,182,.24), transparent 36%) !important;
+  background-color: rgba(255,255,255,.13) !important;
+  backdrop-filter: blur(86px) saturate(1.95) contrast(1.06) !important;
+  -webkit-backdrop-filter: blur(86px) saturate(1.95) contrast(1.06) !important;
+  border: 1px solid rgba(255,255,255,.66) !important;
+  box-shadow:
+    0 24px 62px rgba(24,46,125,.14),
+    0 8px 22px rgba(0,0,0,.06),
+    inset 0 1px 1px rgba(255,255,255,.92),
+    inset 0 -1px 0 rgba(255,255,255,.18) !important;
+}
+
+.tourist-app .device > header { color: var(--aq-navy-800) !important; }
+.tourist-app .mini-map { border-radius: 14px; overflow: hidden; }
+.tourist-app #btnPlus {
+  color: #fff;
+  background: linear-gradient(135deg, #ffb86f, var(--aq-orange-500));
+}
+
+@media (max-width: 1080px) {
+  .command-center .left { width: 220px !important; }
+  .command-center .right { width: 270px !important; }
+  .command-center .tenv { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
