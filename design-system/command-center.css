@@ -3,10 +3,11 @@
 @import url('./bridge/lumina-tokens.css');
 @import url('./theme/spatial.css');
 
-/* ── 页面：干净白底，无彩色光晕 ── */
+/* ── 页面：干净冷灰底，单色不乱 ── */
 html.command-center {
   min-height: 100%;
-  background: var(--ag-spatial-bg) !important;
+  background: var(--ag-spatial-bg-gradient) !important;
+  background-color: var(--ag-spatial-bg) !important;
 }
 
 .command-center body {
@@ -23,7 +24,7 @@ html.command-center {
   height: min(calc(100vh - 52px), 900px) !important;
   display: flex !important;
   flex-direction: column !important;
-  gap: 14px !important;
+  gap: 18px !important;
   background: transparent !important;
   border: none !important;
   border-radius: 0 !important;
@@ -41,9 +42,11 @@ html.command-center {
   align-items: center !important;
   gap: 12px !important;
   border-radius: 999px !important;
-  background: rgba(255, 255, 255, 0.72) !important;
-  backdrop-filter: blur(40px) saturate(1.6) brightness(1.04) !important;
-  -webkit-backdrop-filter: blur(40px) saturate(1.6) brightness(1.04) !important;
+  background-color: rgba(255, 255, 255, 0.50) !important;
+  background-image: var(--ag-texture-mesh), var(--ag-texture-noise) !important;
+  background-size: var(--ag-texture-mesh-size), 160px 160px !important;
+  backdrop-filter: blur(44px) saturate(1.5) brightness(1.03) !important;
+  -webkit-backdrop-filter: blur(44px) saturate(1.5) brightness(1.03) !important;
   border: none !important;
   box-shadow: var(--ag-spatial-shadow-mid) !important;
   color: var(--ag-primary) !important;
@@ -139,7 +142,7 @@ html.command-center {
   flex: 1 !important;
   min-height: 0 !important;
   display: flex !important;
-  gap: 14px !important;
+  gap: 18px !important;
   padding: 0 !important;
 }
 
@@ -147,9 +150,11 @@ html.command-center {
 .command-center .right.glass-panel {
   flex-shrink: 0;
   border-radius: 24px !important;
-  background: rgba(255, 255, 255, 0.65) !important;
-  backdrop-filter: blur(40px) saturate(1.6) !important;
-  -webkit-backdrop-filter: blur(40px) saturate(1.6) !important;
+  background-color: rgba(255, 255, 255, 0.48) !important;
+  background-image: var(--ag-texture-mesh), var(--ag-texture-noise) !important;
+  background-size: var(--ag-texture-mesh-size), 170px 170px !important;
+  backdrop-filter: blur(44px) saturate(1.5) !important;
+  -webkit-backdrop-filter: blur(44px) saturate(1.5) !important;
   border: none !important;
   box-shadow: var(--ag-spatial-shadow-mid) !important;
   overflow: hidden;
@@ -272,11 +277,13 @@ html.command-center {
   margin: 6px 10px !important;
   padding: 12px 12px 12px 14px !important;
   border-radius: 16px !important;
-  background: rgba(255, 255, 255, 0.55) !important;
-  backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.7) !important;
-  border-left: 3px solid rgba(24, 46, 125, 0.15) !important;
-  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04) !important;
+  background-color: rgba(255, 255, 255, 0.42) !important;
+  background-image: var(--ag-texture-noise) !important;
+  background-size: 140px 140px !important;
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.55) !important;
+  border-left: 3px solid rgba(24, 46, 125, 0.18) !important;
+  box-shadow: 0 4px 18px rgba(15, 23, 42, 0.06) !important;
   transition: box-shadow 0.15s, background 0.15s;
 }
 
@@ -328,9 +335,11 @@ html.command-center {
 .command-center .layer-bar {
   top: 14px !important;
   left: 14px !important;
-  background: rgba(255, 255, 255, 0.55) !important;
-  backdrop-filter: blur(36px) saturate(1.7) !important;
-  -webkit-backdrop-filter: blur(36px) saturate(1.7) !important;
+  background-color: rgba(255, 255, 255, 0.45) !important;
+  background-image: var(--ag-texture-noise) !important;
+  background-size: 100px 100px !important;
+  backdrop-filter: blur(36px) saturate(1.6) !important;
+  -webkit-backdrop-filter: blur(36px) saturate(1.6) !important;
   border: none !important;
   border-radius: 999px !important;
   padding: 4px !important;
@@ -357,12 +366,14 @@ html.command-center {
 }
 
 .command-center .chart-hud {
-  background: rgba(255, 255, 255, 0.12) !important;
-  backdrop-filter: blur(44px) saturate(1.75) brightness(1.08) !important;
-  -webkit-backdrop-filter: blur(44px) saturate(1.75) brightness(1.08) !important;
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  background-image: var(--ag-texture-noise) !important;
+  background-size: 110px 110px !important;
+  backdrop-filter: blur(48px) saturate(1.7) brightness(1.08) !important;
+  -webkit-backdrop-filter: blur(48px) saturate(1.7) brightness(1.08) !important;
   border: none !important;
   border-radius: 16px !important;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15) !important;
+  box-shadow: 0 10px 36px rgba(0, 0, 0, 0.18) !important;
   padding: 10px 12px !important;
 }
 
@@ -436,10 +447,12 @@ html.command-center {
 .command-center .ov-stat {
   padding: 12px 10px !important;
   border-radius: 14px !important;
-  background: rgba(255, 255, 255, 0.5) !important;
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.65) !important;
-  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04) !important;
+  background-color: rgba(255, 255, 255, 0.40) !important;
+  background-image: var(--ag-texture-mesh), var(--ag-texture-noise) !important;
+  background-size: var(--ag-texture-mesh-size), 130px 130px !important;
+  backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.50) !important;
+  box-shadow: 0 4px 18px rgba(15, 23, 42, 0.06) !important;
   text-align: center;
 }
 
@@ -475,10 +488,12 @@ html.command-center {
   margin-top: 10px !important;
   padding: 12px !important;
   border-radius: 14px !important;
-  background: rgba(255, 255, 255, 0.5) !important;
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.65) !important;
-  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04) !important;
+  background-color: rgba(255, 255, 255, 0.38) !important;
+  background-image: var(--ag-texture-noise) !important;
+  background-size: 130px 130px !important;
+  backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.48) !important;
+  box-shadow: 0 4px 18px rgba(15, 23, 42, 0.06) !important;
 }
 
 .command-center .risk-brief {

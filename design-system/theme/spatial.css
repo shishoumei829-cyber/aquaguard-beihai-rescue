@@ -1,32 +1,53 @@
-/* AquaGuard · Spatial Theme（克制版）
-   白净 · 卡片纵深 · 磨砂透明 · 反光边框（无彩色光污染） */
+/* AquaGuard · Spatial Theme
+   干净背景 + 卡片磨砂纹理 */
 
 :root {
-  --ag-spatial-bg: linear-gradient(180deg, #fafbfc 0%, #f5f6f8 100%);
+  /* 干净冷灰底 — 单色渐变，不乱 */
+  --ag-spatial-bg: #e3e7ed;
+  --ag-spatial-bg-gradient: linear-gradient(168deg, #e8ebf0 0%, #dde2e9 100%);
 
+  /* 细腻噪点纹理（SVG fractalNoise） */
+  --ag-texture-noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+
+  /* 极细网格 — 材质感 */
+  --ag-texture-mesh:
+    linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+
+  --ag-texture-mesh-size: 20px 20px;
+
+  /* 反光边框 — 灰白对比，在白底上可见 */
   --ag-spatial-rim: linear-gradient(
-    145deg,
-    rgba(255, 255, 255, 0.95) 0%,
-    rgba(255, 255, 255, 0.35) 30%,
-    rgba(255, 255, 255, 0.12) 55%,
-    rgba(255, 255, 255, 0.55) 100%
+    148deg,
+    rgba(255, 255, 255, 0.92) 0%,
+    rgba(200, 208, 220, 0.45) 28%,
+    rgba(160, 170, 190, 0.22) 52%,
+    rgba(255, 255, 255, 0.65) 100%
   );
 
   --ag-spatial-specular:
-    linear-gradient(125deg, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0.08) 30%, transparent 55%);
+    linear-gradient(128deg, rgba(255, 255, 255, 0.62) 0%, rgba(255, 255, 255, 0.06) 32%, transparent 58%);
 
-  --ag-spatial-shadow-far: 0 2px 12px rgba(15, 23, 42, 0.04);
-  --ag-spatial-shadow-mid: 0 8px 28px rgba(15, 23, 42, 0.06);
-  --ag-spatial-shadow-near: 0 16px 40px rgba(15, 23, 42, 0.08);
+  --ag-spatial-shadow-far: 0 4px 16px rgba(15, 23, 42, 0.07);
+  --ag-spatial-shadow-mid: 0 10px 36px rgba(15, 23, 42, 0.10), 0 2px 6px rgba(15, 23, 42, 0.04);
+  --ag-spatial-shadow-near: 0 20px 52px rgba(15, 23, 42, 0.14), 0 4px 12px rgba(15, 23, 42, 0.06);
 
-  --ag-spatial-surface-far: rgba(255, 255, 255, 0.52);
-  --ag-spatial-surface-mid: rgba(255, 255, 255, 0.68);
-  --ag-spatial-surface-near: rgba(255, 255, 255, 0.82);
-  --ag-spatial-blur: blur(40px) saturate(1.6) brightness(1.04);
-  --ag-spatial-blur-strong: blur(48px) saturate(1.7) brightness(1.05);
+  --ag-spatial-surface-far: rgba(255, 255, 255, 0.42);
+  --ag-spatial-surface-mid: rgba(255, 255, 255, 0.52);
+  --ag-spatial-surface-near: rgba(255, 255, 255, 0.62);
+  --ag-spatial-blur: blur(44px) saturate(1.5) brightness(1.03);
+  --ag-spatial-blur-strong: blur(52px) saturate(1.6) brightness(1.04);
 }
 
-/* ── 磨砂玻璃材质 ── */
+/* 卡片纹理 mixin — 噪点 + 微网格叠在磨砂底上 */
+.ag-card-surface {
+  background-color: var(--ag-spatial-surface-mid);
+  background-image: var(--ag-texture-mesh), var(--ag-texture-noise);
+  background-size: var(--ag-texture-mesh-size), 160px 160px;
+  backdrop-filter: var(--ag-spatial-blur);
+  -webkit-backdrop-filter: var(--ag-spatial-blur);
+}
+
 .ag-glass-rim {
   position: relative;
   overflow: hidden;
@@ -46,7 +67,7 @@
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   pointer-events: none;
-  z-index: 2;
+  z-index: 4;
 }
 
 .ag-glass-rim::after {
@@ -56,40 +77,46 @@
   border-radius: inherit;
   background: var(--ag-spatial-specular);
   mix-blend-mode: screen;
-  opacity: 0.55;
+  opacity: 0.65;
   pointer-events: none;
-  z-index: 1;
+  z-index: 2;
 }
 
-.ag-glass-rim > * { position: relative; z-index: 3; }
+.ag-glass-rim > * { position: relative; z-index: 5; }
 
-/* 纵深三档 — 靠位移+中性阴影，不靠彩色发光 */
 .ag-depth-far {
-  background: var(--ag-spatial-surface-far);
-  backdrop-filter: blur(52px) saturate(1.5);
-  -webkit-backdrop-filter: blur(52px) saturate(1.5);
+  background-color: var(--ag-spatial-surface-far);
+  background-image: var(--ag-texture-noise);
+  background-size: 180px 180px;
+  backdrop-filter: blur(48px) saturate(1.45);
+  -webkit-backdrop-filter: blur(48px) saturate(1.45);
   box-shadow: var(--ag-spatial-shadow-far);
 }
 
 .ag-depth-mid {
-  background: var(--ag-spatial-surface-mid);
+  background-color: var(--ag-spatial-surface-mid);
+  background-image: var(--ag-texture-mesh), var(--ag-texture-noise);
+  background-size: var(--ag-texture-mesh-size), 160px 160px;
   backdrop-filter: var(--ag-spatial-blur);
   -webkit-backdrop-filter: var(--ag-spatial-blur);
   box-shadow: var(--ag-spatial-shadow-mid);
 }
 
 .ag-depth-near {
-  background: var(--ag-spatial-surface-near);
+  background-color: var(--ag-spatial-surface-near);
+  background-image: var(--ag-texture-mesh), var(--ag-texture-noise);
+  background-size: var(--ag-texture-mesh-size), 140px 140px;
   backdrop-filter: var(--ag-spatial-blur-strong);
   -webkit-backdrop-filter: var(--ag-spatial-blur-strong);
   box-shadow: var(--ag-spatial-shadow-near);
 }
 
-/* 地图叠层 — 透明屏幕感 */
 .ag-map-overlay {
-  background: rgba(255, 255, 255, 0.14);
-  backdrop-filter: blur(44px) saturate(1.75) brightness(1.06);
-  -webkit-backdrop-filter: blur(44px) saturate(1.75) brightness(1.06);
+  background-color: rgba(255, 255, 255, 0.10);
+  background-image: var(--ag-texture-noise);
+  background-size: 120px 120px;
+  backdrop-filter: blur(48px) saturate(1.7) brightness(1.06);
+  -webkit-backdrop-filter: blur(48px) saturate(1.7) brightness(1.06);
 }
 
 @media (prefers-reduced-motion: reduce) {
