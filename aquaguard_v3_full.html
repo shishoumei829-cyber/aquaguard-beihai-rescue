@@ -4,10 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AquaGuard · 北海银滩智能救援指挥系统</title>
-<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="aquaguard-lumina.css">
-<link rel="stylesheet" href="aquaguard-stitch.css">
-<link rel="stylesheet" href="aquaguard-glass.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
@@ -526,10 +522,11 @@ body{display:flex;align-items:center;justify-content:center;padding:16px;}
 .qmeta{font-size:var(--text-xs);color:var(--tx3);}
 .qst{font-size:var(--text-micro);font-weight:700;padding:1px 4px;border-radius:2px;white-space:nowrap;}
 </style>
+<link rel="stylesheet" href="design-system/terminals-bundle.css">
 </head>
 <body>
-<div class="app">
-  <div class="top glass-bar">
+<div class="app spatial-app ag-spatial-ambient">
+  <div class="top ag-spatial-chrome">
     <div class="logo"><span class="material-symbols-outlined fill">waves</span></div>
     <div>
       <span class="brand">AquaGuard</span>
@@ -720,7 +717,7 @@ body{display:flex;align-items:center;justify-content:center;padding:16px;}
           <div id="mapCalloutBody"></div>
         </div>
         <div class="map-attrib no-callout">© OpenStreetMap · 北海银滩 WGS84</div>
-        <div class="chart-hud" id="chartHud">
+        <div class="chart-hud ag-map-glass" id="chartHud">
           <div class="ch-title">海域实况 · <span id="hudZone">银滩全域</span></div>
           <div class="ch-row"><span>有效波高 Hs</span><b id="hudHs">0.8 m</b></div>
           <div class="ch-row"><span>风向 Wind</span><b id="hudWind">SW 4.2 m/s</b></div>

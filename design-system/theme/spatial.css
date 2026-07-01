@@ -1,0 +1,386 @@
+/* AquaGuard · Spatial Luminous Theme
+   白净 · 空间纵深 · 反光边框 · 微微发光 */
+
+:root {
+  /* 环境光 */
+  --ag-glow-primary: 0 0 28px rgba(56, 92, 220, 0.22), 0 0 64px rgba(24, 46, 125, 0.10);
+  --ag-glow-secondary: 0 0 24px rgba(247, 159, 71, 0.32), 0 0 48px rgba(247, 159, 71, 0.14);
+  --ag-glow-safe: 0 0 20px rgba(22, 163, 74, 0.28);
+  --ag-glow-soft: 0 0 40px rgba(255, 255, 255, 0.65);
+
+  --ag-spatial-bg:
+    radial-gradient(ellipse 100% 70% at 6% -8%, rgba(247, 159, 71, 0.14), transparent 44%),
+    radial-gradient(ellipse 80% 60% at 96% 6%, rgba(72, 110, 255, 0.12), transparent 40%),
+    radial-gradient(ellipse 70% 50% at 50% 108%, rgba(24, 46, 125, 0.06), transparent 48%),
+    linear-gradient(175deg, #ffffff 0%, #fafbff 42%, #f4f6fb 100%);
+
+  --ag-spatial-rim: linear-gradient(
+    148deg,
+    rgba(255, 255, 255, 1) 0%,
+    rgba(200, 215, 255, 0.55) 22%,
+    rgba(24, 46, 125, 0.14) 48%,
+    rgba(255, 220, 180, 0.35) 72%,
+    rgba(255, 255, 255, 0.95) 100%
+  );
+
+  --ag-spatial-specular:
+    linear-gradient(132deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.12) 28%, transparent 54%),
+    radial-gradient(ellipse 75% 60% at 8% 0%, rgba(255, 255, 255, 0.55), transparent 60%);
+
+  --ag-spatial-shadow-far:
+    0 2px 12px rgba(24, 46, 125, 0.04),
+    0 0 32px rgba(255, 255, 255, 0.5);
+  --ag-spatial-shadow-mid:
+    0 4px 20px rgba(24, 46, 125, 0.06),
+    0 0 48px rgba(72, 110, 255, 0.06),
+    0 1px 0 rgba(255, 255, 255, 0.8) inset;
+  --ag-spatial-shadow-near:
+    0 8px 32px rgba(24, 46, 125, 0.08),
+    0 0 64px rgba(72, 110, 255, 0.08),
+    0 1px 0 rgba(255, 255, 255, 0.9) inset;
+
+  --ag-spatial-surface: rgba(255, 255, 255, 0.55);
+  --ag-spatial-surface-mid: rgba(255, 255, 255, 0.68);
+  --ag-spatial-surface-near: rgba(255, 255, 255, 0.82);
+  --ag-spatial-blur: blur(48px) saturate(2) brightness(1.06);
+  --ag-spatial-blur-strong: blur(60px) saturate(2.1) brightness(1.08);
+}
+
+/* ── 页面环境光晕 ── */
+html.command-center,
+html.station-app,
+html.field-phone-app,
+html.tourist-app,
+html.ag-spatial-page {
+  min-height: 100%;
+  background: var(--ag-spatial-bg) !important;
+}
+
+html.command-center body,
+html.station-app body,
+html.field-phone-app body,
+html.tourist-app body.device-preview,
+html.ag-spatial-page body {
+  background: transparent !important;
+}
+
+/* ── 发光材质基类 ── */
+.ag-luminous {
+  --l-glow: var(--ag-glow-primary);
+}
+
+.ag-luminous--warm {
+  --l-glow: var(--ag-glow-secondary);
+}
+
+/* ── 反光边框 + 发光 ── */
+.ag-spatial {
+  position: relative;
+  overflow: hidden;
+  border: none;
+  isolation: isolate;
+  background: var(--ag-spatial-surface-mid);
+  backdrop-filter: var(--ag-spatial-blur);
+  -webkit-backdrop-filter: var(--ag-spatial-blur);
+  box-shadow: var(--ag-spatial-shadow-mid), var(--l-glow, 0 0 40px rgba(72, 110, 255, 0.05));
+}
+
+.ag-spatial::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: var(--ag-spatial-rim);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.ag-spatial::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--ag-spatial-specular);
+  mix-blend-mode: screen;
+  opacity: 0.82;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.ag-spatial > * { position: relative; z-index: 3; }
+
+.ag-spatial--far {
+  background: rgba(255, 255, 255, 0.42);
+  backdrop-filter: blur(64px) saturate(2) brightness(1.04);
+  -webkit-backdrop-filter: blur(64px) saturate(2) brightness(1.04);
+  box-shadow: var(--ag-spatial-shadow-far);
+  transform: translateY(4px) scale(0.986);
+}
+
+.ag-spatial--near {
+  background: var(--ag-spatial-surface-near);
+  backdrop-filter: var(--ag-spatial-blur-strong);
+  -webkit-backdrop-filter: var(--ag-spatial-blur-strong);
+  box-shadow: var(--ag-spatial-shadow-near), var(--l-glow, var(--ag-glow-soft));
+  transform: translateY(-3px) scale(1.008);
+}
+
+/* ── 顶栏 chrome ── */
+.ag-spatial-chrome {
+  position: relative;
+  overflow: hidden;
+  border: none;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(44px) saturate(1.9) brightness(1.08);
+  -webkit-backdrop-filter: blur(44px) saturate(1.9) brightness(1.08);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.95) inset,
+    0 8px 40px rgba(72, 110, 255, 0.08),
+    0 0 80px rgba(255, 255, 255, 0.4);
+}
+
+.ag-spatial-chrome::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    100deg,
+    rgba(255, 255, 255, 1) 0%,
+    rgba(160, 185, 255, 0.4) 30%,
+    rgba(255, 200, 140, 0.25) 70%,
+    rgba(255, 255, 255, 0.9) 100%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.ag-spatial-chrome::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.7) 0%, transparent 50%);
+  mix-blend-mode: screen;
+  opacity: 0.7;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.ag-spatial-chrome > * { position: relative; z-index: 3; }
+
+/* ── 地图叠层磨砂 ── */
+.ag-map-glass {
+  position: relative;
+  overflow: hidden;
+  border: none;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(52px) saturate(2) brightness(1.1);
+  -webkit-backdrop-filter: blur(52px) saturate(2) brightness(1.1);
+  box-shadow:
+    0 16px 48px rgba(0, 0, 0, 0.12),
+    0 0 32px rgba(255, 255, 255, 0.15),
+    0 1px 0 rgba(255, 255, 255, 0.5) inset;
+}
+
+.ag-map-glass::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    150deg,
+    rgba(255, 255, 255, 0.85) 0%,
+    rgba(255, 255, 255, 0.2) 35%,
+    rgba(255, 255, 255, 0.05) 65%,
+    rgba(200, 220, 255, 0.35) 100%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.ag-map-glass::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    linear-gradient(130deg, rgba(255, 255, 255, 0.55) 0%, transparent 48%),
+    radial-gradient(ellipse 90% 55% at 12% 0%, rgba(255, 255, 255, 0.3), transparent 58%);
+  mix-blend-mode: screen;
+  opacity: 0.9;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.ag-map-glass > * { position: relative; z-index: 3; }
+
+/* ── 发光标签 / 按钮 ── */
+.ag-glow-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: var(--ag-radius-pill);
+  font-size: var(--ag-text-label-sm);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  border: 1px solid transparent;
+}
+
+.ag-glow-tag--primary {
+  color: #2a4db8;
+  background: rgba(72, 110, 255, 0.10);
+  border-color: rgba(72, 110, 255, 0.22);
+  box-shadow: 0 0 16px rgba(72, 110, 255, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.ag-glow-tag--warm {
+  color: #c46a10;
+  background: rgba(247, 159, 71, 0.12);
+  border-color: rgba(247, 159, 71, 0.28);
+  box-shadow: var(--ag-glow-secondary), inset 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+
+.ag-glow-tag--safe {
+  color: var(--ag-on-safe);
+  background: rgba(22, 163, 74, 0.10);
+  border-color: rgba(22, 163, 74, 0.22);
+  box-shadow: var(--ag-glow-safe), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+/* ── 发光渐变按钮 ── */
+.ag-glow-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ag-space-2);
+  min-height: var(--ag-touch-min);
+  padding: 0 var(--ag-space-5);
+  border: none;
+  border-radius: var(--ag-radius-lg);
+  font-family: var(--ag-font-sans);
+  font-size: var(--ag-text-label);
+  font-weight: 600;
+  cursor: pointer;
+  overflow: hidden;
+  transition: box-shadow 0.2s var(--ag-ease), transform 0.15s var(--ag-ease);
+}
+
+.ag-glow-btn--primary {
+  color: #fff;
+  background: linear-gradient(135deg, #3d5fd4 0%, #182e7d 55%, #1a358f 100%);
+  box-shadow: var(--ag-glow-primary), 0 4px 16px rgba(24, 46, 125, 0.25);
+}
+
+.ag-glow-btn--primary:hover {
+  box-shadow: 0 0 36px rgba(72, 110, 255, 0.35), 0 6px 20px rgba(24, 46, 125, 0.3);
+  transform: translateY(-1px);
+}
+
+.ag-glow-btn--emergency {
+  min-height: var(--ag-touch-field);
+  width: 100%;
+  border-radius: var(--ag-radius-pill);
+  color: var(--ag-on-secondary);
+  font-size: var(--ag-text-body);
+  background: linear-gradient(135deg, #ffc06a 0%, #f79f47 45%, #e8872a 100%);
+  box-shadow: var(--ag-glow-secondary), 0 6px 24px rgba(247, 159, 71, 0.35);
+}
+
+.ag-glow-btn--emergency:hover {
+  box-shadow: 0 0 40px rgba(247, 159, 71, 0.45), 0 8px 28px rgba(247, 159, 71, 0.4);
+  transform: translateY(-1px);
+}
+
+.ag-glow-btn--ghost {
+  color: var(--ag-primary);
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(72, 110, 255, 0.15);
+  box-shadow: 0 0 24px rgba(72, 110, 255, 0.08);
+}
+
+/* ── 发光数值 ── */
+.ag-glow-num {
+  font-family: var(--ag-font-display);
+  font-weight: 600;
+  color: var(--ag-primary);
+  text-shadow: 0 0 20px rgba(72, 110, 255, 0.35);
+}
+
+.ag-glow-num--warm {
+  color: var(--ag-secondary-deep);
+  text-shadow: 0 0 18px rgba(247, 159, 71, 0.45);
+}
+
+/* ── 应用外壳 ── */
+.spatial-app {
+  position: relative;
+  background: rgba(255, 255, 255, 0.45) !important;
+  backdrop-filter: blur(56px) saturate(1.9) brightness(1.06);
+  -webkit-backdrop-filter: blur(56px) saturate(1.9) brightness(1.06);
+  border: none !important;
+  box-shadow:
+    var(--ag-spatial-shadow-near),
+    0 0 120px rgba(72, 110, 255, 0.06) !important;
+}
+
+.spatial-app::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: var(--ag-spatial-rim);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* ── 发光状态点 ── */
+@keyframes agGlowPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(247, 159, 71, 0.5), 0 0 8px rgba(247, 159, 71, 0.6); }
+  50% { box-shadow: 0 0 0 6px rgba(247, 159, 71, 0), 0 0 14px rgba(247, 159, 71, 0.8); }
+}
+
+.ag-glow-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ag-secondary);
+  animation: agGlowPulse 2s ease infinite;
+}
+
+@keyframes agSpatialAmbient {
+  from { opacity: 0; transform: translateY(10px) scale(0.99); }
+  to { opacity: 1; transform: none; }
+}
+
+.ag-spatial-ambient {
+  animation: agSpatialAmbient var(--ag-duration-ambient) var(--ag-ease) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ag-spatial-ambient,
+  .ag-glow-dot { animation: none; }
+}
