@@ -1,357 +1,215 @@
 @import url('https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght@6..144,400..700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=swap');
 
-/* ── Glimmer 物理常量 ──
-   感知深度 ~1m · 最小可读 0.6° · 加色显示（黑=透明） */
+/* AquaGuard 地图透明叠层
+   借鉴 Glimmer：极简、ambient 动效、层级叠放、大字号扫读
+   载体是网页/平板 — 磨砂半透明，不是眼镜加色黑底 */
+
 :root {
-  --glimmer-view-distance: 1;
-  --glimmer-deg-px: 18.5;
-  --glimmer-type-min: calc(0.6 * var(--glimmer-deg-px) * 1px);
-  --glimmer-type-body: calc(0.85 * var(--glimmer-deg-px) * 1px);
-  --glimmer-type-title: calc(1.1 * var(--glimmer-deg-px) * 1px);
-  --glimmer-type-display: calc(1.6 * var(--glimmer-deg-px) * 1px);
-
-  --glimmer-plate: rgba(0, 0, 0, 0.84);
-  --glimmer-plate-elevated: rgba(0, 0, 0, 0.9);
-  --glimmer-content: #f5f5f5;
-  --glimmer-content-muted: rgba(245, 245, 245, 0.62);
-  --glimmer-accent: #f0e6d8;
-  --glimmer-accent-warm: #e8d4b8;
-  --glimmer-danger: #ffb4a8;
-  --glimmer-outline: rgba(255, 255, 255, 0.14);
-
-  --glimmer-shape-md: 14px;
-  --glimmer-shape-lg: 20px;
-
-  --glimmer-ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
-  --glimmer-ambient-duration: 2000ms;
-  --glimmer-focus-duration: 0ms;
+  --overlay-surface: rgba(255, 255, 255, 0.62);
+  --overlay-surface-strong: rgba(255, 255, 255, 0.78);
+  --overlay-blur: blur(32px);
+  --overlay-line: rgba(255, 255, 255, 0.82);
+  --overlay-line-tint: rgba(24, 46, 125, 0.10);
+  --overlay-shadow: 0 14px 40px rgba(24, 46, 125, 0.14), 0 4px 12px rgba(0, 0, 0, 0.06);
+  --overlay-r-lg: 20px;
+  --overlay-r-md: 16px;
+  --overlay-r-pill: 999px;
+  --overlay-ease: cubic-bezier(0.2, 0, 0, 1);
+  --overlay-ambient: 2000ms;
 }
 
-/* ══════════════════════════════════════
-   GLIMMER DISPLAY — 透明屏幕根容器
-   模拟眼镜视场：世界可见，UI 仅在需要处加光
-   ══════════════════════════════════════ */
-
-.glimmer-display {
+/* ── 根容器：地图 + 叠层 UI ── */
+.overlay-display {
   position: relative;
   width: 100%;
   max-width: 420px;
   aspect-ratio: 4 / 3;
   margin: 0 auto;
   overflow: hidden;
-  border-radius: 12px;
-  background: #000;
-  font-family: 'Google Sans Flex', system-ui, sans-serif;
+  border-radius: 16px;
+  font-family: 'Google Sans Flex', 'PingFang SC', system-ui, sans-serif;
   font-optical-sizing: auto;
   -webkit-font-smoothing: antialiased;
 }
 
-/* 真实世界背景 — 加色显示下「无 UI 处」完全透出 */
-.glimmer-display__world {
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(180deg, #4a9fd4 0%, #6eb8e8 38%, #c9b896 62%, #d4c4a0 100%);
-  background-size: cover;
-}
-
-.glimmer-display__world::after {
-  content: '';
+.overlay-display__map {
   position: absolute;
   inset: 0;
   background: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80') center/cover;
-  opacity: 0.85;
 }
 
-/* 视场框 — 眼镜显示区域约占 FOV 一小部分 */
-.glimmer-display__fov {
+/* ── 磨砂表面基类 ── */
+.overlay-glass {
+  position: relative;
+  overflow: hidden;
+  background: var(--overlay-surface);
+  backdrop-filter: var(--overlay-blur);
+  -webkit-backdrop-filter: var(--overlay-blur);
+  border: 1px solid var(--overlay-line);
+  box-shadow: var(--overlay-shadow);
+}
+
+/* 内缘高光 — 不是一条白线，是折射渐变 */
+.overlay-glass::before {
+  content: '';
   position: absolute;
-  inset: 8%;
+  inset: 0;
   pointer-events: none;
-  border: 1px dashed rgba(255, 255, 255, 0.12);
-  border-radius: 8px;
+  border-radius: inherit;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.72) 0%, rgba(255, 255, 255, 0.18) 28%, transparent 55%),
+    radial-gradient(circle at 14% 10%, rgba(255, 255, 255, 0.35), transparent 22%);
+  opacity: 0.75;
+  mix-blend-mode: screen;
 }
 
-/* ══════════════════════════════════════
-   AMBIENT NOTIFICATION — 2s 外周引导入场
-   ══════════════════════════════════════ */
+.overlay-glass > * {
+  position: relative;
+  z-index: 1;
+}
 
-.glimmer-ambient {
+/* ── Ambient 通知 · Glimmer 2s 缓入 ── */
+.overlay-ambient {
   position: absolute;
-  top: 10%;
-  left: 8%;
-  right: 8%;
+  top: 12px;
+  left: 12px;
+  right: 12px;
   z-index: 3;
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 14px;
-  background: var(--glimmer-plate-elevated);
-  border: 1px solid var(--glimmer-outline);
-  border-radius: var(--glimmer-shape-md);
-  color: var(--glimmer-content);
-  font-size: var(--glimmer-type-body);
+  padding: 11px 14px;
+  border-radius: var(--overlay-r-pill);
+  font-size: 14px;
   font-weight: 500;
   line-height: 1.3;
-  font-variation-settings: 'opsz' 16, 'wght' 500;
-  letter-spacing: 0.02em;
-  box-shadow: var(--glimmer-shadow-depth-2);
-  animation: glimmer-ambient-enter var(--glimmer-ambient-duration) var(--glimmer-ease-emphasized) both;
+  color: var(--primary, #182e7d);
+  font-variation-settings: 'opsz' 14, 'wght' 500;
+  animation: overlay-ambient-in var(--overlay-ambient) var(--overlay-ease) both;
 }
 
-.glimmer-ambient__icon {
+.overlay-ambient__icon {
   font-family: 'Material Symbols Outlined';
-  font-size: calc(var(--glimmer-type-body) * 1.2);
-  color: var(--glimmer-danger);
+  font-size: 20px;
+  color: var(--danger, #ba1a1a);
   font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24;
-  flex-shrink: 0;
 }
 
-@keyframes glimmer-ambient-enter {
-  0% {
-    opacity: 0;
-    transform: translateY(-16px) scale(0.97);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+@keyframes overlay-ambient-in {
+  from { opacity: 0; transform: translateY(-14px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ══════════════════════════════════════
-   SURFACE — 黑=容器底板，非颜色
-   depthEffect: z-space + 深色遮挡阴影
-   ══════════════════════════════════════ */
-
-.glimmer-surface {
-  --glimmer-depth: 1;
-  position: relative;
-  background: var(--glimmer-plate);
-  border: 1px solid var(--glimmer-outline);
-  color: var(--glimmer-content);
-}
-
-.glimmer-surface[data-depth="0"] {
-  box-shadow: none;
-}
-
-.glimmer-surface[data-depth="1"] {
-  box-shadow:
-    0 3px 0 rgba(0, 0, 0, 0.55),
-    0 10px 28px rgba(0, 0, 0, 0.72);
-}
-
-.glimmer-surface[data-depth="2"] {
-  box-shadow:
-    0 5px 0 rgba(0, 0, 0, 0.65),
-    0 16px 48px rgba(0, 0, 0, 0.82);
-}
-
-.glimmer-surface.is-focused {
-  --glimmer-depth: 2;
-  box-shadow:
-    0 6px 0 rgba(0, 0, 0, 0.7),
-    0 20px 56px rgba(0, 0, 0, 0.88);
-}
-
-/* ══════════════════════════════════════
-   RESCUE CARD — 暗底亮字，禁止浅色表面
-   ══════════════════════════════════════ */
-
-.glimmer-rescue {
+/* ── 救援信息卡 ── */
+.overlay-rescue {
   position: absolute;
-  left: 8%;
-  right: 8%;
-  bottom: 10%;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
   z-index: 2;
-  border-radius: var(--glimmer-shape-lg);
-  padding: 16px 18px 14px;
-  transition: box-shadow var(--glimmer-focus-duration);
+  border-radius: var(--overlay-r-lg);
+  padding: 16px 18px;
 }
 
-.glimmer-rescue__eyebrow {
+.overlay-rescue__eyebrow {
   margin: 0 0 4px;
-  font-size: max(var(--glimmer-type-min), 11px);
-  font-weight: 500;
+  font-size: 11px;
+  font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--glimmer-danger);
-  font-variation-settings: 'opsz' 12, 'wght' 500;
+  color: var(--secondary, #f79f47);
+  font-variation-settings: 'opsz' 12, 'wght' 600;
 }
 
-.glimmer-rescue__title {
+.overlay-rescue__title {
   margin: 0;
-  font-size: var(--glimmer-type-title);
+  font-size: 18px;
   font-weight: 600;
-  line-height: 1.2;
-  letter-spacing: 0.01em;
-  font-variation-settings: 'opsz' 20, 'wght' 600;
-  color: var(--glimmer-content);
+  line-height: 1.25;
+  color: var(--on-surface, #1b1b21);
+  font-variation-settings: 'opsz' 18, 'wght' 600;
 }
 
-.glimmer-rescue__meta {
+.overlay-rescue__row {
   display: flex;
-  gap: 14px;
+  align-items: baseline;
+  gap: 12px;
   margin-top: 10px;
-  font-size: var(--glimmer-type-body);
-  font-weight: 400;
-  color: var(--glimmer-content-muted);
-  font-variation-settings: 'opsz' 16, 'wght' 400;
-  letter-spacing: 0.03em;
 }
 
-.glimmer-rescue__distance {
-  font-size: var(--glimmer-type-display);
-  font-weight: 400;
+.overlay-rescue__distance {
+  font-size: 32px;
+  font-weight: 500;
   line-height: 1;
   letter-spacing: -0.02em;
-  font-variation-settings: 'opsz' 32, 'wght' 400;
-  color: var(--glimmer-accent);
+  color: var(--primary, #182e7d);
+  font-variation-settings: 'opsz' 32, 'wght' 500;
 }
 
-.glimmer-rescue__distance small {
-  font-size: 0.45em;
-  font-weight: 500;
-  color: var(--glimmer-content-muted);
-  margin-left: 2px;
+.overlay-rescue__distance small {
+  font-size: 0.42em;
+  font-weight: 600;
+  color: var(--on-surface-variant, #454651);
 }
 
-/* ══════════════════════════════════════
-   BUTTON — 叠在 card 上建立层级
-   去饱和 accent · 即时 focus ring
-   ══════════════════════════════════════ */
+.overlay-rescue__meta {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--on-surface-variant, #454651);
+  font-variation-settings: 'opsz' 14, 'wght' 400;
+}
 
-.glimmer-action {
+/* ── 操作按钮 · 叠在卡片上方 ── */
+.overlay-action {
   position: absolute;
-  right: 8%;
-  bottom: calc(10% + 88px);
+  right: 12px;
+  bottom: 108px;
   z-index: 4;
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  height: calc(var(--glimmer-type-body) * 2.6);
-  padding: 0 20px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: calc(var(--glimmer-shape-md) + 4px);
-  background: var(--glimmer-plate-elevated);
-  color: var(--glimmer-accent);
+  height: 44px;
+  padding: 0 18px;
+  border: 1px solid var(--overlay-line);
+  border-radius: var(--overlay-r-pill);
+  background: var(--overlay-surface-strong);
+  backdrop-filter: var(--overlay-blur);
+  -webkit-backdrop-filter: var(--overlay-blur);
+  color: var(--primary, #182e7d);
   font-family: inherit;
-  font-size: var(--glimmer-type-body);
+  font-size: 14px;
   font-weight: 600;
-  font-variation-settings: 'opsz' 16, 'wght' 600;
-  letter-spacing: 0.04em;
+  font-variation-settings: 'opsz' 14, 'wght' 600;
   cursor: pointer;
-  box-shadow: var(--glimmer-shadow-depth-2, 0 5px 0 rgba(0,0,0,.65), 0 16px 48px rgba(0,0,0,.82));
-  transition: outline var(--glimmer-focus-duration);
+  box-shadow: var(--overlay-shadow);
+  overflow: hidden;
+  transition: box-shadow 0ms, transform 0ms;
 }
 
-.glimmer-action .material-symbols-outlined {
-  font-size: calc(var(--glimmer-type-body) * 1.25);
-  font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24;
-}
-
-.glimmer-action:hover,
-.glimmer-action.is-focused {
-  outline: 2px solid rgba(255, 255, 255, 0.88);
-  outline-offset: 3px;
-}
-
-.glimmer-action:active {
-  transform: translateY(1px);
-  transition: transform 0ms, outline var(--glimmer-focus-duration);
-}
-
-/* ══════════════════════════════════════
-   SYSTEM CONTROL — 夸张 depth 层级
-   ══════════════════════════════════════ */
-
-.glimmer-system {
+.overlay-action::before {
+  content: '';
   position: absolute;
-  right: 8%;
-  top: 28%;
-  z-index: 2;
-  width: 44px;
-  padding: 10px 0;
-  border-radius: 22px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-}
-
-.glimmer-system__track {
-  width: 4px;
-  height: 72px;
-  border-radius: 2px;
-  background: rgba(255, 255, 255, 0.12);
-  position: relative;
-}
-
-.glimmer-system__fill {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 55%;
-  border-radius: 2px;
-  background: var(--glimmer-content-muted);
-}
-
-.glimmer-system__icon {
-  font-family: 'Material Symbols Outlined';
-  font-size: 18px;
-  color: var(--glimmer-content-muted);
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
-}
-
-/* ══════════════════════════════════════
-   HALATION 对比 — 错误示范（浅色表面）
-   ══════════════════════════════════════ */
-
-.glimmer-display--compare {
-  max-width: 880px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  aspect-ratio: unset;
-  background: transparent;
-}
-
-.glimmer-display--compare .glimmer-display {
-  max-width: none;
-}
-
-.glimmer-rescue--wrong {
-  background: rgba(255, 255, 255, 0.78);
-  color: #1a1a1a;
-  backdrop-filter: blur(12px);
-}
-
-.glimmer-rescue--wrong .glimmer-rescue__title,
-.glimmer-rescue--wrong .glimmer-rescue__meta {
-  color: #333;
-}
-
-.glimmer-rescue--wrong .glimmer-rescue__eyebrow {
-  color: #c44;
-}
-
-.glimmer-display__label {
-  position: absolute;
-  top: 4px;
-  left: 8px;
-  z-index: 10;
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.45);
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.8) 0%, transparent 50%);
+  opacity: 0.6;
   pointer-events: none;
 }
 
+.overlay-action > * { position: relative; z-index: 1; }
+
+.overlay-action .material-symbols-outlined {
+  font-size: 20px;
+  font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+}
+
+.overlay-action:hover,
+.overlay-action.is-focused {
+  box-shadow:
+    0 0 0 2px rgba(24, 46, 125, 0.35),
+    var(--overlay-shadow);
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .glimmer-ambient {
-    animation: none;
-  }
+  .overlay-ambient { animation: none; }
 }

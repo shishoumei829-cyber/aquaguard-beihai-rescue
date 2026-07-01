@@ -3,73 +3,45 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Glimmer 透明屏幕</title>
+<title>AquaGuard 地图透明叠层</title>
+<link rel="stylesheet" href="aquaguard-lumina.css">
 <link rel="stylesheet" href="aquaguard-glimmer-display.css">
 <style>
   body {
     margin: 0;
     min-height: 100vh;
-    background: #0a0a0a;
+    background: #eef1f6;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 32px 20px;
-    gap: 20px;
-    font-family: 'Google Sans Flex', system-ui, sans-serif;
-  }
-  h1 {
-    margin: 0;
-    font-size: 13px;
-    font-weight: 500;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: rgba(255,255,255,0.4);
+    padding: 24px;
   }
 </style>
 </head>
 <body>
 
-<h1>Jetpack Compose Glimmer · 透明屏幕</h1>
+<div class="overlay-display">
+  <div class="overlay-display__map"></div>
 
-<!-- 完整透明屏幕组件 -->
-<div class="glimmer-display" id="glimmerDisplay">
-  <div class="glimmer-display__world"></div>
-  <div class="glimmer-display__fov"></div>
-
-  <div class="glimmer-ambient">
-    <span class="glimmer-ambient__icon material-symbols-outlined">emergency</span>
+  <div class="overlay-ambient overlay-glass">
+    <span class="overlay-ambient__icon material-symbols-outlined">emergency</span>
     新 SOS 事件 · B-3 泳区
   </div>
 
-  <div class="glimmer-system glimmer-surface" data-depth="2">
-    <span class="glimmer-system__icon material-symbols-outlined">volume_up</span>
-    <div class="glimmer-system__track">
-      <div class="glimmer-system__fill"></div>
-    </div>
-  </div>
-
-  <button class="glimmer-action glimmer-surface is-focused" data-depth="2" type="button">
+  <button class="overlay-action is-focused" type="button">
     <span class="material-symbols-outlined">navigation</span>
     导航前往
   </button>
 
-  <article class="glimmer-rescue glimmer-surface" data-depth="1">
-    <p class="glimmer-rescue__eyebrow">紧急求救</p>
-    <h2 class="glimmer-rescue__title">儿童 · 手环 A-2213</h2>
-    <div class="glimmer-rescue__meta">
-      <span class="glimmer-rescue__distance">128<small>m</small></span>
-      <span>心率 142 · B-3 泳区</span>
+  <article class="overlay-rescue overlay-glass">
+    <p class="overlay-rescue__eyebrow">紧急求救</p>
+    <h2 class="overlay-rescue__title">儿童 · 手环 A-2213</h2>
+    <div class="overlay-rescue__row">
+      <span class="overlay-rescue__distance">128<small>m</small></span>
+      <span class="overlay-rescue__meta">心率 142 · B-3 泳区</span>
     </div>
   </article>
 </div>
-
-<script>
-  document.querySelector('.glimmer-action')?.addEventListener('click', function () {
-    this.classList.toggle('is-focused');
-    document.querySelector('.glimmer-rescue')?.classList.toggle('is-focused');
-  });
-</script>
 
 </body>
 </html>
