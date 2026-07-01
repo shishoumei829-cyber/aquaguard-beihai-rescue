@@ -3,42 +3,41 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AquaGuard 地图透明叠层</title>
-<link rel="stylesheet" href="aquaguard-lumina.css">
+<title>AquaGuard · 地图透明叠层 HUD</title>
 <link rel="stylesheet" href="aquaguard-glimmer-display.css">
 <style>
   body {
     margin: 0;
     min-height: 100vh;
-    background: #eef1f6;
+    background: #dde3ec;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 24px;
+    padding: 32px;
   }
 </style>
 </head>
 <body>
 
-<div class="overlay-display">
-  <div class="overlay-display__map"></div>
+<div class="spatial-hud">
+  <div class="spatial-hud__map"></div>
 
-  <div class="overlay-ambient overlay-glass">
-    <span class="overlay-ambient__icon material-symbols-outlined">emergency</span>
+  <div class="spatial-hud__ambient spatial-glass spatial-glass--far">
+    <span class="material-symbols-outlined">emergency</span>
     新 SOS 事件 · B-3 泳区
   </div>
 
-  <button class="overlay-action is-focused" type="button">
+  <button class="spatial-hud__action spatial-glass spatial-glass--near" type="button">
     <span class="material-symbols-outlined">navigation</span>
     导航前往
   </button>
 
-  <article class="overlay-rescue overlay-glass">
-    <p class="overlay-rescue__eyebrow">紧急求救</p>
-    <h2 class="overlay-rescue__title">儿童 · 手环 A-2213</h2>
-    <div class="overlay-rescue__row">
-      <span class="overlay-rescue__distance">128<small>m</small></span>
-      <span class="overlay-rescue__meta">心率 142 · B-3 泳区</span>
+  <article class="spatial-hud__card spatial-glass spatial-glass--mid">
+    <p class="spatial-hud__eyebrow">紧急求救</p>
+    <h2 class="spatial-hud__title">儿童 · 手环 A-2213</h2>
+    <div class="spatial-hud__row">
+      <span class="spatial-hud__distance">128<small>m</small></span>
+      <span class="spatial-hud__meta">心率 142 · B-3 泳区</span>
     </div>
   </article>
 </div>
