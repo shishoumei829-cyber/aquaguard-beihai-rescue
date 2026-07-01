@@ -84,12 +84,6 @@
   --ag-glass-blur-far: blur(56px) saturate(1.9) brightness(1.04);
   --ag-glass-blur-near: blur(36px) saturate(1.65) brightness(1.07);
 
-  /* ── Luminous Glow ── */
-  --ag-glow-primary: 0 0 28px rgba(56, 92, 220, 0.22), 0 0 64px rgba(24, 46, 125, 0.10);
-  --ag-glow-secondary: 0 0 24px rgba(247, 159, 71, 0.32), 0 0 48px rgba(247, 159, 71, 0.14);
-  --ag-glow-safe: 0 0 20px rgba(22, 163, 74, 0.28);
-  --ag-glow-soft: 0 0 40px rgba(255, 255, 255, 0.65);
-
   /* ── Motion ── */
   --ag-ease: cubic-bezier(0.2, 0, 0, 1);
   --ag-ease-standard: cubic-bezier(0.4, 0, 0.2, 1);

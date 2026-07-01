@@ -1,0 +1,548 @@
+/* AquaGuard 指挥端专用 — 卡片 + 空间磨砂（仅 aquaguard_v3_full.html） */
+@import url('./index.css');
+@import url('./bridge/lumina-tokens.css');
+@import url('./theme/spatial.css');
+
+/* ── 页面：干净白底，无彩色光晕 ── */
+html.command-center {
+  min-height: 100%;
+  background: var(--ag-spatial-bg) !important;
+}
+
+.command-center body {
+  display: block !important;
+  padding: 20px 24px 32px !important;
+  min-height: 100vh;
+  background: transparent !important;
+}
+
+/* ── 外壳：透明容器，露出背景纵深 ── */
+.command-center .app {
+  max-width: none !important;
+  width: 100% !important;
+  height: min(calc(100vh - 52px), 900px) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 14px !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+}
+
+/* ── 顶栏卡片：漂浮胶囊 ── */
+.command-center .top.glass-bar {
+  height: 72px !important;
+  margin: 0 !important;
+  padding: 0 24px !important;
+  flex-shrink: 0;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  border-radius: 999px !important;
+  background: rgba(255, 255, 255, 0.72) !important;
+  backdrop-filter: blur(40px) saturate(1.6) brightness(1.04) !important;
+  -webkit-backdrop-filter: blur(40px) saturate(1.6) brightness(1.04) !important;
+  border: none !important;
+  box-shadow: var(--ag-spatial-shadow-mid) !important;
+  color: var(--ag-primary) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.command-center .top.glass-bar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: var(--ag-spatial-rim);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.command-center .top.glass-bar::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--ag-spatial-specular);
+  mix-blend-mode: screen;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.command-center .top > * { position: relative; z-index: 1; }
+
+.command-center .logo {
+  width: 42px !important;
+  height: 42px !important;
+  border-radius: 14px !important;
+  background: var(--ag-primary) !important;
+  border: none !important;
+  box-shadow: 0 4px 12px rgba(24, 46, 125, 0.18) !important;
+}
+
+.command-center .logo .material-symbols-outlined { color: #fff !important; font-size: 22px !important; }
+
+.command-center .brand {
+  color: var(--ag-primary) !important;
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  text-shadow: none !important;
+}
+
+.command-center .brand-sub {
+  color: var(--ag-on-surface-variant) !important;
+  opacity: 1 !important;
+  font-weight: 600 !important;
+}
+
+.command-center .tloc,
+.command-center .tenv-i,
+.command-center .tsl,
+.command-center .ttime { color: var(--ag-on-surface-variant) !important; }
+
+.command-center .tenv-i b,
+.command-center .tsn { color: var(--ag-primary) !important; text-shadow: none !important; }
+
+.command-center .tenv-i .material-symbols-outlined { color: var(--ag-secondary) !important; filter: none !important; }
+
+.command-center .tsep { background: rgba(24, 46, 125, 0.10) !important; }
+
+.command-center .ldot { background: var(--ag-secondary) !important; box-shadow: none !important; }
+
+.command-center .ltxt { color: var(--ag-secondary-deep) !important; text-shadow: none !important; }
+
+.command-center .ttime {
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  color: var(--ag-primary) !important;
+}
+
+.command-center .rescue-global.active {
+  background: var(--ag-secondary-soft) !important;
+  border: 1px solid rgba(247, 159, 71, 0.22) !important;
+  color: var(--ag-secondary-deep) !important;
+  box-shadow: none !important;
+  border-radius: 999px !important;
+}
+
+.command-center .rescue-global.active span { color: var(--ag-secondary-deep) !important; }
+
+/* ── 三栏卡片布局 ── */
+.command-center .body {
+  flex: 1 !important;
+  min-height: 0 !important;
+  display: flex !important;
+  gap: 14px !important;
+  padding: 0 !important;
+}
+
+.command-center .left.glass-panel,
+.command-center .right.glass-panel {
+  flex-shrink: 0;
+  border-radius: 24px !important;
+  background: rgba(255, 255, 255, 0.65) !important;
+  backdrop-filter: blur(40px) saturate(1.6) !important;
+  -webkit-backdrop-filter: blur(40px) saturate(1.6) !important;
+  border: none !important;
+  box-shadow: var(--ag-spatial-shadow-mid) !important;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.command-center .left.glass-panel::before,
+.command-center .right.glass-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: var(--ag-spatial-rim);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.command-center .left.glass-panel::after,
+.command-center .right.glass-panel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--ag-spatial-specular);
+  mix-blend-mode: screen;
+  opacity: 0.45;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.command-center .left { width: 280px !important; border-right: none !important; }
+.command-center .right { width: 320px !important; border-left: none !important; }
+
+.command-center .left > *,
+.command-center .right > * { position: relative; z-index: 3; }
+
+/* ── 地图卡片（中栏 · 近层） ── */
+.command-center .center {
+  flex: 1 !important;
+  min-width: 0 !important;
+  border-radius: 24px !important;
+  overflow: hidden !important;
+  background: #163a52 !important;
+  box-shadow: var(--ag-spatial-shadow-near) !important;
+  border: none !important;
+  display: flex !important;
+  flex-direction: column !important;
+  position: relative;
+}
+
+.command-center .center::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: var(--ag-spatial-rim);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 6;
+}
+
+.command-center .mapwrap {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  border-radius: 24px 24px 0 0;
+}
+
+.command-center .mapwrap::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-size: 48px 48px;
+  opacity: 0.35;
+}
+
+/* ── 左栏：事件卡片化 ── */
+.command-center .ph {
+  background: transparent !important;
+  border-bottom: 1px solid rgba(24, 46, 125, 0.06) !important;
+  padding: 14px 16px 10px !important;
+}
+
+.command-center .pt {
+  color: var(--ag-primary) !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.command-center .pc {
+  background: var(--ag-secondary-soft) !important;
+  color: var(--ag-secondary-deep) !important;
+  border: 1px solid rgba(247, 159, 71, 0.18) !important;
+  border-radius: 999px !important;
+  padding: 2px 8px !important;
+  box-shadow: none !important;
+}
+
+.command-center .evlist::before { display: none; }
+
+.command-center .ev {
+  margin: 6px 10px !important;
+  padding: 12px 12px 12px 14px !important;
+  border-radius: 16px !important;
+  background: rgba(255, 255, 255, 0.55) !important;
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.7) !important;
+  border-left: 3px solid rgba(24, 46, 125, 0.15) !important;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04) !important;
+  transition: box-shadow 0.15s, background 0.15s;
+}
+
+.command-center .ev::before { display: none !important; }
+
+.command-center .ev:hover {
+  background: rgba(255, 255, 255, 0.72) !important;
+  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.06) !important;
+}
+
+.command-center .ev.on {
+  background: rgba(255, 255, 255, 0.85) !important;
+  border-left-color: var(--ag-primary) !important;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08) !important;
+}
+
+.command-center .ev.urgent {
+  border-left-color: var(--ag-secondary) !important;
+  background: rgba(255, 252, 248, 0.7) !important;
+}
+
+.command-center .ev.sub {
+  margin-left: 18px !important;
+  opacity: 0.85;
+  border-left-color: rgba(147, 143, 220, 0.4) !important;
+}
+
+.command-center .edesc {
+  color: var(--ag-on-surface) !important;
+  font-weight: 600 !important;
+  font-size: 12px !important;
+}
+
+.command-center .etag {
+  border-radius: 6px !important;
+  padding: 2px 6px !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+.command-center .etag.sys { background: rgba(24, 46, 125, 0.08) !important; color: var(--ag-primary) !important; }
+.command-center .etag.call,
+.command-center .etag.report,
+.command-center .etag.field { background: var(--ag-secondary-soft) !important; color: var(--ag-secondary-deep) !important; }
+.command-center .etag.match { background: rgba(147, 143, 220, 0.12) !important; color: #5a5090 !important; }
+.command-center .etag.done { background: var(--ag-safe-soft) !important; color: var(--ag-on-safe) !important; }
+
+/* ── 地图控件：磨砂叠层 ── */
+.command-center .layer-bar {
+  top: 14px !important;
+  left: 14px !important;
+  background: rgba(255, 255, 255, 0.55) !important;
+  backdrop-filter: blur(36px) saturate(1.7) !important;
+  -webkit-backdrop-filter: blur(36px) saturate(1.7) !important;
+  border: none !important;
+  border-radius: 999px !important;
+  padding: 4px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12) !important;
+}
+
+.command-center .lyr {
+  color: rgba(24, 46, 125, 0.55) !important;
+  border-radius: 999px !important;
+  padding: 5px 12px !important;
+  font-size: 10px !important;
+  font-weight: 600 !important;
+}
+
+.command-center .lyr.on {
+  background: var(--ag-primary) !important;
+  color: #fff !important;
+  box-shadow: none !important;
+}
+
+.command-center .lyr:hover:not(.on) {
+  background: rgba(255, 255, 255, 0.4) !important;
+  color: var(--ag-primary) !important;
+}
+
+.command-center .chart-hud {
+  background: rgba(255, 255, 255, 0.12) !important;
+  backdrop-filter: blur(44px) saturate(1.75) brightness(1.08) !important;
+  -webkit-backdrop-filter: blur(44px) saturate(1.75) brightness(1.08) !important;
+  border: none !important;
+  border-radius: 16px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15) !important;
+  padding: 10px 12px !important;
+}
+
+.command-center .chart-hud::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(145deg, rgba(255,255,255,0.6), rgba(255,255,255,0.1), rgba(255,255,255,0.35));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.command-center .chart-hud { position: absolute; }
+
+.command-center .ch-title { color: rgba(255, 255, 255, 0.5) !important; }
+.command-center .ch-row { color: rgba(255, 255, 255, 0.65) !important; }
+.command-center .ch-row b { color: #fff !important; text-shadow: none !important; }
+.command-center .ch-row .tag.warn { background: rgba(247, 159, 71, 0.2) !important; color: #ffc880 !important; box-shadow: none !important; }
+.command-center .ch-row .tag.ok { background: rgba(22, 163, 74, 0.2) !important; color: #7ee4a8 !important; box-shadow: none !important; }
+
+.command-center .scale-lbl { color: rgba(255, 255, 255, 0.45) !important; }
+
+/* ── 底栏时间轴卡片 ── */
+.command-center .sbar.glass-timeline {
+  height: 68px !important;
+  background: rgba(255, 255, 255, 0.55) !important;
+  backdrop-filter: blur(32px) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.4) !important;
+  border-radius: 0 0 24px 24px !important;
+  padding: 0 20px !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
+}
+
+.command-center .sbar .lcs.on {
+  background: var(--ag-secondary) !important;
+  color: #fff !important;
+  border-radius: 999px !important;
+  box-shadow: none !important;
+}
+
+/* ── 右栏：指标卡片 ── */
+.command-center .right-top,
+.command-center .overview-panel { background: transparent !important; }
+
+.command-center .ov-title {
+  color: var(--ag-primary) !important;
+  font-weight: 700 !important;
+  font-size: 14px !important;
+  margin-bottom: 4px;
+}
+
+.command-center .ov-sub {
+  color: var(--ag-on-surface-variant) !important;
+  font-size: 11px !important;
+  line-height: 1.45;
+  margin-bottom: 12px;
+}
+
+.command-center .ov-stats {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 8px !important;
+  margin-bottom: 12px !important;
+}
+
+.command-center .ov-stat {
+  padding: 12px 10px !important;
+  border-radius: 14px !important;
+  background: rgba(255, 255, 255, 0.5) !important;
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.65) !important;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04) !important;
+  text-align: center;
+}
+
+.command-center .ov-stat b {
+  display: block;
+  font-size: 1.25rem !important;
+  font-weight: 700 !important;
+  color: var(--ag-primary) !important;
+  text-shadow: none !important;
+}
+
+.command-center .ov-stat.hot b { color: var(--ag-secondary-deep) !important; }
+
+.command-center .ov-stat em {
+  font-style: normal;
+  font-size: 10px !important;
+  color: var(--ag-on-surface-variant) !important;
+  margin-top: 2px;
+}
+
+.command-center .ov-hint {
+  padding: 10px 12px !important;
+  border-radius: 12px !important;
+  background: rgba(24, 46, 125, 0.04) !important;
+  border: 1px solid rgba(24, 46, 125, 0.06) !important;
+  font-size: 11px !important;
+  color: var(--ag-on-surface-variant) !important;
+  line-height: 1.45;
+  margin-bottom: 10px;
+}
+
+.command-center .ov-preview {
+  margin-top: 10px !important;
+  padding: 12px !important;
+  border-radius: 14px !important;
+  background: rgba(255, 255, 255, 0.5) !important;
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.65) !important;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04) !important;
+}
+
+.command-center .risk-brief {
+  border-radius: 14px !important;
+  background: rgba(255, 255, 255, 0.5) !important;
+  border: 1px solid rgba(255, 255, 255, 0.65) !important;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04) !important;
+}
+
+.command-center .action-guide {
+  background: linear-gradient(180deg, rgba(24, 46, 125, 0.04) 0%, transparent 100%) !important;
+}
+
+.command-center .ag-primary.emg {
+  background: var(--ag-secondary) !important;
+  color: var(--ag-on-secondary) !important;
+  box-shadow: 0 4px 14px rgba(247, 159, 71, 0.22) !important;
+  border-radius: 12px !important;
+}
+
+.command-center .ag-primary.prim {
+  background: var(--ag-primary) !important;
+  color: #fff !important;
+  box-shadow: 0 4px 14px rgba(24, 46, 125, 0.18) !important;
+  border-radius: 12px !important;
+}
+
+.command-center .rs-badge.active,
+.command-center .rs-badge.pending {
+  background: var(--ag-secondary-soft) !important;
+  color: var(--ag-secondary-deep) !important;
+  border: 1px solid rgba(247, 159, 71, 0.2) !important;
+  box-shadow: none !important;
+}
+
+.command-center .rs-badge.active .rs-dot { box-shadow: none !important; animation: none; }
+
+/* ── 弹层：近层磨砂卡片 ── */
+.command-center .map-callout,
+.command-center .comm-popup,
+.command-center .dispatch-popup,
+.command-center .resolve-popup,
+.command-center .archive-popup,
+.command-center .alert-popup,
+.command-center .info-toast,
+.command-center .chart-ctx {
+  background: rgba(255, 255, 255, 0.88) !important;
+  backdrop-filter: blur(40px) saturate(1.6) !important;
+  -webkit-backdrop-filter: blur(40px) saturate(1.6) !important;
+  border: none !important;
+  border-radius: 20px !important;
+  box-shadow: var(--ag-spatial-shadow-near) !important;
+}
+
+.command-center .alert-popup {
+  border: 1px solid rgba(247, 159, 71, 0.25) !important;
+  box-shadow: var(--ag-spatial-shadow-near) !important;
+}
+
+.command-center .overview-panel { padding: 16px !important; }
+
+@media (max-width: 1100px) {
+  .command-center .body { flex-direction: column; overflow-y: auto; }
+  .command-center .left,
+  .command-center .right { width: 100% !important; max-height: 280px; }
+  .command-center .center { min-height: 400px; }
+}
