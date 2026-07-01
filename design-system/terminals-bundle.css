@@ -1,0 +1,5 @@
+/* AquaGuard Terminals — 统一入口（四端页面专用） */
+@import url('./index.css');
+@import url('./bridge/lumina-tokens.css');
+@import url('./theme/spatial.css');
+@import url('./bridge/terminals.css');

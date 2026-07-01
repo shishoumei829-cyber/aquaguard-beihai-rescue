@@ -1,0 +1,21 @@
+/* AquaGuard Design System — 统一入口
+   用法：<link rel="stylesheet" href="design-system/index.css"> */
+
+@import url('./tokens.css');
+@import url('./material/glass.css');
+@import url('./components/button.css');
+@import url('./components/chip.css');
+@import url('./components/card.css');
+@import url('./components/feedback.css');
+@import url('./components/hud.css');
+
+/* Base reset for DS pages */
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: var(--ag-font-sans);
+  color: var(--ag-on-surface);
+  background: var(--ag-page-bg);
+  -webkit-font-smoothing: antialiased;
+}

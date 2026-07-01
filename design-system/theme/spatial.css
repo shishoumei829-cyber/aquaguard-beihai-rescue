@@ -1,0 +1,95 @@
+/* AquaGuard · Spatial Theme
+   简约克制 · 白净空间 · 磨砂无边纹理 */
+
+:root {
+  --ag-spatial-bg: #f6f7f9;
+  --ag-spatial-bg-gradient: linear-gradient(180deg, #fafbfc 0%, #f4f5f7 100%);
+
+  --ag-spatial-rim: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.95) 0%,
+    rgba(255, 255, 255, 0.30) 30%,
+    rgba(255, 255, 255, 0.10) 55%,
+    rgba(255, 255, 255, 0.55) 100%
+  );
+
+  --ag-spatial-specular:
+    linear-gradient(125deg, rgba(255, 255, 255, 0.50) 0%, rgba(255, 255, 255, 0.06) 28%, transparent 55%);
+
+  --ag-spatial-shadow-far: 0 2px 12px rgba(15, 23, 42, 0.04);
+  --ag-spatial-shadow-mid: 0 8px 28px rgba(15, 23, 42, 0.07);
+  --ag-spatial-shadow-near: 0 16px 44px rgba(15, 23, 42, 0.10);
+
+  --ag-spatial-surface-far: rgba(255, 255, 255, 0.55);
+  --ag-spatial-surface-mid: rgba(255, 255, 255, 0.68);
+  --ag-spatial-surface-near: rgba(255, 255, 255, 0.80);
+  --ag-spatial-blur: blur(40px) saturate(1.6) brightness(1.04);
+  --ag-spatial-blur-strong: blur(48px) saturate(1.7) brightness(1.05);
+}
+
+.ag-glass-rim {
+  position: relative;
+  overflow: hidden;
+  border: none;
+  isolation: isolate;
+}
+
+.ag-glass-rim::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: var(--ag-spatial-rim);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.ag-glass-rim::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--ag-spatial-specular);
+  mix-blend-mode: screen;
+  opacity: 0.50;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.ag-glass-rim > * { position: relative; z-index: 3; }
+
+.ag-depth-far {
+  background: var(--ag-spatial-surface-far);
+  backdrop-filter: blur(48px) saturate(1.5);
+  -webkit-backdrop-filter: blur(48px) saturate(1.5);
+  box-shadow: var(--ag-spatial-shadow-far);
+}
+
+.ag-depth-mid {
+  background: var(--ag-spatial-surface-mid);
+  backdrop-filter: var(--ag-spatial-blur);
+  -webkit-backdrop-filter: var(--ag-spatial-blur);
+  box-shadow: var(--ag-spatial-shadow-mid);
+}
+
+.ag-depth-near {
+  background: var(--ag-spatial-surface-near);
+  backdrop-filter: var(--ag-spatial-blur-strong);
+  -webkit-backdrop-filter: var(--ag-spatial-blur-strong);
+  box-shadow: var(--ag-spatial-shadow-near);
+}
+
+.ag-map-overlay {
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(44px) saturate(1.7) brightness(1.06);
+  -webkit-backdrop-filter: blur(44px) saturate(1.7) brightness(1.06);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ag-spatial-ambient { animation: none; }
+}

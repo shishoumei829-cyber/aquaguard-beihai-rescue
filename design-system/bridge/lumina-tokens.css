@@ -1,0 +1,125 @@
+/* Legacy Lumina token bridge — 兼容终端页面内联样式与 JS */
+
+:root {
+  --primary: var(--ag-primary);
+  --secondary: var(--ag-secondary);
+  --on-primary: var(--ag-on-primary);
+
+  --surface: var(--ag-surface);
+  --surface-container: var(--ag-surface-container);
+  --outline-variant: var(--ag-outline-variant);
+  --page-bg: var(--ag-page-bg);
+  --bg: var(--ag-bg);
+  --bg1: var(--ag-surface-container);
+  --bg2: #eceef6;
+
+  --on-surface: var(--ag-on-surface);
+  --on-surface-variant: var(--ag-on-surface-variant);
+  --tx: var(--ag-on-surface);
+  --tx2: var(--ag-on-surface-variant);
+  --tx3: #8b90a5;
+
+  --safe: var(--ag-safe);
+  --safe-bg: var(--ag-safe-soft);
+  --safe-dark: var(--ag-on-safe);
+  --danger: var(--ag-error);
+  --danger-bg: rgba(186, 26, 26, 0.14);
+  --warning-dark: #7a4a0f;
+  --purple: #938fdc;
+  --purple-bg: rgba(147, 143, 220, 0.18);
+  --purple-dark: #5a5090;
+  --sea: #0b1e33;
+
+  --nv: var(--ag-primary);
+  --nv1: rgba(24, 46, 125, 0.08);
+  --nv2: rgba(24, 46, 125, 0.14);
+  --og: var(--ag-secondary);
+  --og1: rgba(247, 159, 71, 0.14);
+  --og-dark: var(--warning-dark);
+  --rd: var(--ag-error);
+  --rd1: var(--ag-error-soft);
+  --gn: var(--ag-safe);
+  --gn1: var(--ag-safe-soft);
+  --pu: var(--purple);
+  --pu1: var(--purple-bg);
+  --br: var(--ag-outline-variant);
+
+  --orange: var(--ag-secondary);
+  --orange-deep: var(--ag-secondary-deep);
+  --orange-soft: var(--ag-secondary-soft);
+  --red: var(--ag-error);
+  --red-soft: var(--ag-error-soft);
+  --green: #19c978;
+  --muted: #6f7482;
+  --line: rgba(24, 46, 125, 0.12);
+  --line-soft: rgba(255, 255, 255, 0.78);
+  --shadow: 0 24px 70px rgba(24, 46, 125, 0.13), 0 8px 24px rgba(0, 0, 0, 0.045);
+  --shadow-soft: 0 14px 38px rgba(24, 46, 125, 0.09), 0 3px 10px rgba(0, 0, 0, 0.035);
+  --shadow-orange: 0 18px 34px rgba(247, 159, 71, 0.25);
+  --shadow-primary: var(--ag-shadow-primary);
+
+  --font-sans: var(--ag-font-sans);
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  --text-micro: 0.4375rem;
+  --text-2xs: 0.5rem;
+  --text-xs: 0.5625rem;
+  --text-sm: 0.625rem;
+  --text-base: 0.6875rem;
+  --text-md: 0.75rem;
+  --text-lg: 0.8125rem;
+  --text-xl: 0.875rem;
+  --text-2xl: 0.9375rem;
+  --text-3xl: 1.0625rem;
+  --text-4xl: 1.125rem;
+  --text-timer: 1.25rem;
+  --text-display: 1.875rem;
+  --text-display-lg: 2.625rem;
+
+  --icon-sm: var(--ag-icon-sm);
+  --icon-md: var(--ag-icon-md);
+  --icon-lg: var(--ag-icon-lg);
+
+  --radius-sm: var(--ag-radius-sm);
+  --radius: var(--ag-radius-md);
+  --radius-lg: var(--ag-radius-lg);
+  --radius-xl: var(--ag-radius-xl);
+
+  --card-shadow: var(--ag-shadow-sm);
+  --card-shadow-lg: var(--ag-shadow-lg);
+
+  --blur: blur(38px);
+  --r-xl: 32px;
+  --r-lg: 24px;
+  --r-md: 18px;
+  --r-sm: 14px;
+
+  --device-bg: linear-gradient(145deg, #3a3f4b 0%, #1a1d24 55%, #0f1117 100%);
+  --device-page-bg: var(--ag-spatial-bg);
+}
+
+.one-line { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.muted { color: var(--muted); font-weight: 700; }
+.tiny { font-size: 11px; font-weight: 900; letter-spacing: 0.06em; }
+
+.lumina-toast {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%) translateY(12px);
+  background: var(--ag-primary);
+  color: #fff;
+  padding: 11px 18px;
+  border-radius: var(--ag-radius-sm);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.28s, transform 0.28s;
+  z-index: 200;
+  white-space: nowrap;
+  box-shadow: var(--ag-shadow-primary);
+}
+.lumina-toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
