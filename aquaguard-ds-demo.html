@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AquaGuard Design System</title>
+<link rel="stylesheet" href="design-system/index.css">
+<style>
+  .ds-page { max-width: 960px; margin: 0 auto; padding: 32px 20px 80px; }
+  .ds-hero { margin-bottom: 40px; }
+  .ds-hero h1 { margin: 0 0 8px; font-size: 28px; color: var(--ag-primary); }
+  .ds-hero p { margin: 0; color: var(--ag-on-surface-variant); font-size: 15px; }
+  .ds-section { margin-bottom: 48px; }
+  .ds-section h2 {
+    margin: 0 0 6px; font-size: 13px; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase; color: var(--ag-primary);
+  }
+  .ds-section p { margin: 0 0 16px; font-size: 13px; color: var(--ag-on-surface-variant); }
+  .ds-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .ds-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+  .ds-panel { background: var(--ag-bg); border: 1px solid var(--ag-outline-variant); border-radius: var(--ag-radius-lg); padding: 20px; }
+  .ds-label { font-size: 11px; font-weight: 700; color: var(--ag-outline); margin-bottom: 12px; letter-spacing: 0.05em; text-transform: uppercase; }
+  .ds-hud-wrap { display: flex; justify-content: center; padding: 16px 0; }
+  .ds-hud-wrap .ag-hud { box-shadow: var(--ag-shadow-lg); }
+  .ag-hud__map { background: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=900&q=80') center/cover; }
+</style>
+</head>
+<body>
+
+<div class="ds-page">
+
+  <header class="ds-hero">
+    <h1>AquaGuard Design System</h1>
+    <p>Lumina DS · 组件 + Token + 材质 · 引用 <code>design-system/index.css</code></p>
+  </header>
+
+  <!-- Tokens -->
+  <section class="ds-section">
+    <h2>Color Tokens</h2>
+    <div class="ds-row">
+      <div style="width:48px;height:48px;border-radius:8px;background:var(--ag-primary)"></div>
+      <div style="width:48px;height:48px;border-radius:8px;background:var(--ag-secondary)"></div>
+      <div style="width:48px;height:48px;border-radius:8px;background:var(--ag-error)"></div>
+      <div style="width:48px;height:48px;border-radius:8px;background:var(--ag-safe)"></div>
+      <div style="width:48px;height:48px;border-radius:8px;background:var(--ag-surface-container);border:1px solid var(--ag-outline-variant)"></div>
+    </div>
+  </section>
+
+  <!-- Buttons -->
+  <section class="ds-section">
+    <h2>Buttons</h2>
+    <p>M3 Expressive · 紧急按钮 56px · State layer</p>
+    <div class="ds-panel">
+      <div class="ds-label">ag-btn</div>
+      <div class="ds-row" style="margin-bottom:12px">
+        <button class="ag-btn ag-btn--primary" type="button">
+          <span class="material-symbols-outlined fill">send</span>确认派遣
+        </button>
+        <button class="ag-btn ag-btn--outline" type="button">查看详情</button>
+        <button class="ag-btn ag-btn--ghost" type="button">取消</button>
+        <button class="ag-btn ag-btn--icon" type="button" aria-label="定位">
+          <span class="material-symbols-outlined">my_location</span>
+        </button>
+      </div>
+      <button class="ag-btn ag-btn--emergency" type="button" style="max-width:360px">
+        <span class="material-symbols-outlined fill">directions_run</span>出发救援
+      </button>
+      <div style="margin-top:12px">
+        <div class="ag-btn-group">
+          <button class="ag-btn-group__main" type="button">
+            <span class="material-symbols-outlined fill">group</span>派遣小组 A
+          </button>
+          <button class="ag-btn-group__menu" type="button" aria-label="更多">
+            <span class="material-symbols-outlined">expand_more</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Chips -->
+  <section class="ds-section">
+    <h2>Chips</h2>
+    <p>颜色 + 图标双编码</p>
+    <div class="ds-row">
+      <span class="ag-chip ag-chip--emergency"><span class="material-symbols-outlined">emergency</span>紧急求救</span>
+      <span class="ag-chip ag-chip--waiting"><span class="material-symbols-outlined">hourglass_top</span>待处理</span>
+      <span class="ag-chip ag-chip--active"><span class="material-symbols-outlined">directions_run</span>救援中</span>
+      <span class="ag-chip ag-chip--danger"><span class="material-symbols-outlined">monitor_heart</span>心率异常</span>
+      <span class="ag-chip ag-chip--live"><span class="material-symbols-outlined">sensors</span>LIVE</span>
+    </div>
+  </section>
+
+  <!-- Cards -->
+  <section class="ds-section">
+    <h2>Cards & Metrics</h2>
+    <div class="ds-grid">
+      <article class="ag-card ag-card--emergency">
+        <div class="ag-card__header">
+          <h3 class="ag-card__title">手环 SOS · A-2213</h3>
+          <span class="ag-chip ag-chip--emergency"><span class="material-symbols-outlined">emergency</span>紧急</span>
+        </div>
+        <div class="ag-card__meta">
+          <span class="ag-card__meta-item"><span class="material-symbols-outlined">person</span>儿童 · 7 岁</span>
+          <span class="ag-card__meta-item"><span class="material-symbols-outlined">location_on</span>B-3 · 128m</span>
+        </div>
+        <div class="ag-card__actions">
+          <button class="ag-btn ag-btn--primary" type="button"><span class="material-symbols-outlined fill">send</span>派遣</button>
+          <button class="ag-btn ag-btn--outline" type="button">详情</button>
+        </div>
+      </article>
+      <div class="ag-panel">
+        <div class="ag-metric-row">
+          <div class="ag-metric">
+            <span class="ag-metric__value ag-metric__value--emergency">3</span>
+            <span class="ag-metric__label">待派遣</span>
+          </div>
+          <div class="ag-metric">
+            <span class="ag-metric__value">12</span>
+            <span class="ag-metric__label">在岗救生员</span>
+          </div>
+          <div class="ag-metric">
+            <span class="ag-metric__value ag-metric__value--danger">1</span>
+            <span class="ag-metric__label">心率告警</span>
+          </div>
+        </div>
+        <div class="ag-progress" style="margin-top:16px">
+          <div class="ag-progress__label"><span>救援进度</span><span>68%</span></div>
+          <div class="ag-progress__track"><div class="ag-progress__fill ag-progress__fill--emergency" style="width:68%"></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Feedback -->
+  <section class="ds-section">
+    <h2>Feedback</h2>
+    <div class="ds-grid">
+      <div class="ag-alert ag-alert--sos ag-glass ag-glass--far">
+        <span class="material-symbols-outlined">emergency</span>
+        新 SOS 事件 · B-3 泳区
+      </div>
+      <div class="ag-nav-step ag-nav-step--warning">
+        <span class="material-symbols-outlined">directions_walk</span>
+        沿救援步道前进 120m 后右转
+      </div>
+    </div>
+    <div style="margin-top:12px">
+      <div class="ag-toolbar ag-panel" style="display:inline-flex;width:auto">
+        <button class="ag-toolbar__btn ag-toolbar__btn--active" type="button"><span class="material-symbols-outlined">crisis_alert</span></button>
+        <button class="ag-toolbar__btn" type="button"><span class="material-symbols-outlined">groups</span></button>
+        <button class="ag-toolbar__btn" type="button"><span class="material-symbols-outlined">layers</span></button>
+        <span class="ag-toolbar__sep"></span>
+        <button class="ag-toolbar__btn" type="button"><span class="material-symbols-outlined">grid_view</span></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- HUD · Glimmer 迁移 -->
+  <section class="ds-section">
+    <h2>Map HUD</h2>
+    <p>Glimmer 迁移：纵深三档 · ambient 2s · 磨砂叠层（非眼镜黑底）</p>
+    <div class="ds-hud-wrap">
+      <div class="ag-hud">
+        <div class="ag-hud__map"></div>
+        <div class="ag-hud__ambient ag-alert ag-glass ag-glass--far">
+          <span class="material-symbols-outlined">emergency</span>
+          新 SOS 事件 · B-3 泳区
+        </div>
+        <button class="ag-hud__action ag-btn ag-glass ag-glass--near" type="button" style="min-height:unset;height:44px;padding:0 18px;width:auto">
+          <span class="material-symbols-outlined">navigation</span>导航前往
+        </button>
+        <article class="ag-hud__card ag-glass ag-glass--mid">
+          <p class="ag-hud__eyebrow">紧急求救</p>
+          <h3 class="ag-hud__title">儿童 · 手环 A-2213</h3>
+          <div class="ag-hud__row">
+            <span class="ag-hud__distance">128<small>m</small></span>
+            <span class="ag-hud__meta">心率 142 · B-3 泳区</span>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Glass depth demo -->
+  <section class="ds-section">
+    <h2>Glass Depth</h2>
+    <p>far / mid / near 纵深材质对比</p>
+    <div class="ds-grid" style="background:url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&q=60') center/cover;padding:24px;border-radius:var(--ag-radius-lg)">
+      <div class="ag-glass ag-glass--far" style="padding:14px 18px;border-radius:var(--ag-radius-pill);color:var(--ag-primary);font-size:14px">far · 背景通知</div>
+      <div class="ag-glass ag-glass--mid" style="padding:18px;border-radius:var(--ag-radius-lg)">
+        <div class="ag-type-title" style="color:var(--ag-on-surface)">mid · 主信息卡</div>
+        <div class="ag-type-body" style="color:var(--ag-on-surface-variant);margin-top:4px">海滩颜色可透出</div>
+      </div>
+      <div class="ag-glass ag-glass--near" style="padding:12px 20px;border-radius:var(--ag-radius-pill);color:var(--ag-primary);font-weight:600;display:inline-flex;align-items:center;gap:8px;width:fit-content">
+        <span class="material-symbols-outlined">navigation</span>near · 主操作
+      </div>
+    </div>
+  </section>
+
+</div>
+
+</body>
+</html>
